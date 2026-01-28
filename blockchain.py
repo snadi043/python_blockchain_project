@@ -11,6 +11,7 @@ blockchain = [1]
 # following a convention that each function should perform single task for implementing code redability
 # and maintainability in the application.
 def get_last_transaction_value():
+    """ Function to return the last block from the blockchain."""
     return blockchain[-1]
 
 
@@ -19,6 +20,12 @@ def get_last_transaction_value():
 # The second line of the function has to be indented to get identified by the python compiler
 # in order to execute the code.
 def add_block(transaction_amount, last_transaction=[1]):
+    """ Function to perfom the task of adding value/data to the block.
+
+    Arguments: 
+        : transaction_amount: this is a float value to be entered by the user.
+        : last_transaction: this is a block which is last block in the blockchain.
+    """
     blockchain.append([last_transaction, transaction_amount]) 
     # append() -> It is the built in python method for the List data type used to add values to the
     # list at the end of the existing list.
@@ -29,6 +36,7 @@ def add_block(transaction_amount, last_transaction=[1]):
 
 # Function to get user input and use it where ever needed in the code to reduce code repetition.
 def get_user_input():
+    """ Function that is responsible to fetch the user inputs in the float format."""
     return float(input('Please enter an amount: '))
 
 
