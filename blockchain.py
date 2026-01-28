@@ -59,6 +59,8 @@ def print_blockchain_elements():
     for block in blockchain:
         print('Outputting the blocks.')
         print(block)
+    else:
+        print('-' * 20)
 
 tx_amount = get_transaction_value()
 add_transaction(tx_amount)
@@ -66,12 +68,10 @@ add_transaction(tx_amount)
 # Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
 def verify_blockchain():
     is_valid = True
-    block_index = 0
-    for block in blockchain:
+    for block_index in range(len(blockchain)):
         if block_index == 0:
-            block_index += 1
             continue
-        elif block[0] == blockchain[block_index - 1]:
+        elif blockchain[block_index][0] == blockchain[block_index - 1]:
             is_valid = True 
         else:
             is_valid = False
@@ -79,10 +79,11 @@ def verify_blockchain():
         block_index += 1
     return is_valid
 
+awaiting_input = True
 
 # While loop is another built in python functionality to loop infinetly till a condition is meet.
 # The syntax for the while loop is as follows.
-while True:
+while awaiting_input:
     print('Choose an option from below.')
     print('1: Add a new transaction value.')
     print('2: Output the blocks of the blockchain.')
@@ -100,16 +101,17 @@ while True:
         print_blockchain_elements()
     elif user_choice == 'h':
         if len(blockchain) >= 1:
-            blockchain[0] = 2
+            blockchain[0] = [2]
     elif user_choice == 'q':
         # break -> breaks the current execution and quits out of the loop
         # continue -> continue stops executing the current condition and starts the loop execution  from the first.
-        break
+        awaiting_input = False
         # continue
     else:
         print('Invalid input. Please select something from the list of choices.')
     # print('Checking the continue execution.')
     if not verify_blockchain():
+        print_blockchain_elements()
         print('Invalid blockchain.')
         break
 
