@@ -12,6 +12,9 @@ blockchain = [1]
 # and maintainability in the application.
 def get_last_transaction_value():
     """ Function to return the last block from the blockchain."""
+    # checking the length of the blockchain list so that conditional ouputting of blocks can be handled.
+    if len(blockchain) < 1:
+        return None
     return blockchain[-1]
 
 
@@ -19,13 +22,16 @@ def get_last_transaction_value():
 # followed by name of the function and () and :
 # The second line of the function has to be indented to get identified by the python compiler
 # in order to execute the code.
-def add_block(transaction_amount, last_transaction=[1]):
+def add_transaction(transaction_amount, last_transaction=[1]):
     """ Function to perfom the task of adding value/data to the block.
 
     Arguments: 
         : transaction_amount: this is a float value to be entered by the user.
         : last_transaction: this is a block which is last block in the blockchain.
     """
+    # Handling the condition where invalid transaction is trying to be added to the blockchain.
+    if last_transaction == None:
+        last_transaction = [1]
     blockchain.append([last_transaction, transaction_amount]) 
     # append() -> It is the built in python method for the List data type used to add values to the
     # list at the end of the existing list.
@@ -55,15 +61,32 @@ def print_blockchain_elements():
         print(block)
 
 tx_amount = get_transaction_value()
-add_block(tx_amount)
+add_transaction(tx_amount)
+
+# Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
+def verify_blockchain():
+    is_valid = True
+    block_index = 0
+    for block in blockchain:
+        if block_index == 0:
+            block_index += 1
+            continue
+        elif block[0] == blockchain[block_index - 1]:
+            is_valid = True 
+        else:
+            is_valid = False
+            break
+        block_index += 1
+    return is_valid
 
 
 # While loop is another built in python functionality to loop infinetly till a condition is meet.
 # The syntax for the while loop is as follows.
 while True:
     print('Choose an option from below.')
-    print('1: Add a transaction.')
+    print('1: Add a new transaction value.')
     print('2: Output the blocks of the blockchain.')
+    print('h: Manipulate the block.')
     print('q: Quit')
 
     user_choice = get_user_choice()
@@ -72,9 +95,12 @@ while True:
         # float() -> It is a data type method to convert the usual user string input to required float format for tx.
         tx_amount = get_transaction_value()
         # To execute the function just call it by the function name along with ().
-        add_block(tx_amount, get_last_transaction_value())
+        add_transaction(tx_amount, get_last_transaction_value())
     elif user_choice == '2':
         print_blockchain_elements()
+    elif user_choice == 'h':
+        if len(blockchain) >= 1:
+            blockchain[0] = 2
     elif user_choice == 'q':
         # break -> breaks the current execution and quits out of the loop
         # continue -> continue stops executing the current condition and starts the loop execution  from the first.
@@ -83,6 +109,8 @@ while True:
     else:
         print('Invalid input. Please select something from the list of choices.')
     # print('Checking the continue execution.')
-        
+    if not verify_blockchain():
+        print('Invalid blockchain.')
+        break
 
 print('DONE.')
