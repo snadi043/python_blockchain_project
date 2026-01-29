@@ -96,10 +96,8 @@ def mine_block():
     # For now a easy way to implement hashing is to used the stringified version of all the key values from the block.
     # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
     # values to the string format.
-    for keys in last_block:
-        value = last_block[keys]
-        hashed_block = hashed_block + str(value)
-        print(hashed_block)
+    hashed_block = '-'.join([str(last_block[keys]) for keys in last_block])
+    print(hashed_block)
     
     block = {
         'previous_hash': 'XYZ',
