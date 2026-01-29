@@ -4,9 +4,16 @@
 # This is the basic python data type which is non primitive and is similar to arrays in JavaScript
 # which is called a "List" in python and it's representation is same as in JS which is []
 
+# genesis_block - It is the first block of the blockchain transaction which initializes the blockchain transactions.
+genesis_block = {
+    'previos_hash': '',
+    'index': 0,
+    'transactions': []
+}
+
 # The term blockchain is the varibale representation in python.
 # There are no keywords like var, int, const in python.
-blockchain = [1]
+blockchain = [genesis_block]
 # Open_Transactions is a list which represents the transactions that are under build process.
 # If user wants to add coins then they will be adding that transaction to list of open transactions.
 open_transactions = []
@@ -79,6 +86,29 @@ def print_blockchain_elements():
 tx_amount = get_transaction_value()
 add_transaction(tx_amount)
 
+# Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
+# In order to add the open_transactions to processed transaction a hashing mechanism has to be implemented to make
+# the blockchain secure while mining the blocks.
+def mine_block():
+    last_block = blockchain[-1]
+    hashed_block = ''
+    # As mining process has to be secured the hashing process becomes more important to be implemented.
+    # For now a easy way to implement hashing is to used the stringified version of all the key values from the block.
+    # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
+    # values to the string format.
+    for keys in last_block:
+        value = last_block[keys]
+        hashed_block = hashed_block + str(value)
+        print(hashed_block)
+    
+    block = {
+        'previous_hash': 'XYZ',
+        'index': len(blockchain),
+        'transaction': open_transactions
+    }
+
+    blockchain.append(block)
+
 # Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
 def verify_blockchain():
     is_valid = True
@@ -100,7 +130,8 @@ awaiting_input = True
 while awaiting_input:
     print('Choose an option from below.')
     print('1: Add a new transaction value.')
-    print('2: Output the blocks of the blockchain.')
+    print('2: Mine Block')
+    print('3: Output the blocks of the blockchain.')
     print('h: Manipulate the block.')
     print('q: Quit')
 
@@ -117,6 +148,8 @@ while awaiting_input:
         add_transaction(tx_recipient, amount=tx_amount)
         print(open_transactions)
     elif user_choice == '2':
+        mine_block()
+    elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == 'h':
         if len(blockchain) >= 1:
@@ -129,10 +162,10 @@ while awaiting_input:
     else:
         print('Invalid input. Please select something from the list of choices.')
     # print('Checking the continue execution.')
-    if not verify_blockchain():
-        print_blockchain_elements()
-        print('Invalid blockchain.')
-        break
+    # if not verify_blockchain():
+    #     print_blockchain_elements()
+    #     print('Invalid blockchain.')
+    #     break
 
 print('DONE.')
 
