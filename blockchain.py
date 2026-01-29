@@ -7,6 +7,12 @@
 # The term blockchain is the varibale representation in python.
 # There are no keywords like var, int, const in python.
 blockchain = [1]
+# Open_Transactions is a list which represents the transactions that are under build process.
+# If user wants to add coins then they will be adding that transaction to list of open transactions.
+open_transactions = []
+
+# Defining the variable owner which for now represents the sender for any transaction for the local instance of blockchain.
+owner = 'SAI'
 
 # following a convention that each function should perform single task for implementing code redability
 # and maintainability in the application.
@@ -22,17 +28,23 @@ def get_last_transaction_value():
 # followed by name of the function and () and :
 # The second line of the function has to be indented to get identified by the python compiler
 # in order to execute the code.
-def add_transaction(transaction_amount, last_transaction=[1]):
+def add_transaction(recipient, sender = owner, amount=1.0):
     """ Function to perfom the task of adding value/data to the block.
 
     Arguments: 
-        : transaction_amount: this is a float value to be entered by the user.
-        : last_transaction: this is a block which is last block in the blockchain.
+        : sender: Person who is willing to send the coins.
+        : recipient: Person who is suppose to recieve the coins.
+        : amount: Number of coins being used for the transaction.
     """
-    # Handling the condition where invalid transaction is trying to be added to the blockchain.
-    if last_transaction == None:
-        last_transaction = [1]
-    blockchain.append([last_transaction, transaction_amount]) 
+
+    # Defining a transaction which is a dictionary with key/value pairs.
+    transaction = {
+        'sender': sender,
+        'recipient': recipient,
+        'amount': amount
+    }
+    open_transactions.append(transaction)
+
     # append() -> It is the built in python method for the List data type used to add values to the
     # list at the end of the existing list.
     # The values in the list can be accessed with the position which are called "index" which starts
@@ -41,11 +53,13 @@ def add_transaction(transaction_amount, last_transaction=[1]):
     # print() -> it is another python method used to output the values in the terminal when executed.
 
     
-# Function to fetch the transaction value
+# Function to fetch the transaction value/data which should now fetch recipient data and amount value.
+# The return type of the function is a tuple becasue it is supposed to be immutatble.
 def get_transaction_value():
     """ Function that is responsible to fetch the user inputs in the float format."""
-    user_input = float(input('Please enter an amount: '))
-    return user_input
+    tx_recipient = input('Please enter the name of the recipient: ')
+    tx_amount = float(input('Please enter an amount: '))
+    return (tx_recipient, tx_amount)
 
 # Function to fetch the user input
 def get_user_choice():
@@ -94,9 +108,14 @@ while awaiting_input:
     if user_choice == '1':
         # input() -> It is also an built in python method which accepts the user inputs from the terminal commandline.
         # float() -> It is a data type method to convert the usual user string input to required float format for tx.
-        tx_amount = get_transaction_value()
+        tx_data = get_transaction_value()
+
         # To execute the function just call it by the function name along with ().
-        add_transaction(tx_amount, get_last_transaction_value())
+        # To add_transaction, the tx_amount has to be passed as argument for which tuple unpacking is needed.
+        #  Tuple unpacking is similar to using JS ES6 Feature of Spread and Rest operators.
+        tx_recipient, tx_amount = tx_data
+        add_transaction(tx_recipient, amount=tx_amount)
+        print(open_transactions)
     elif user_choice == '2':
         print_blockchain_elements()
     elif user_choice == 'h':
@@ -116,3 +135,10 @@ while awaiting_input:
         break
 
 print('DONE.')
+
+
+# Transaction - Dictionary // key,value pairs
+# Outstanding_transactions - list // Order doesnt matter
+# blockchain - list // order matters 
+# block - dictionary // 
+# participants - set //
