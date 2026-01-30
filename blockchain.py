@@ -55,8 +55,8 @@ def add_transaction(recipient, sender = owner, amount=1.0):
         'amount': amount
     }
     open_transactions.append(transaction)
-    participants.append(sender)
-    participants.append(recipient)
+    participants.add(sender)
+    participants.add(recipient)
 
     # append() -> It is the built in python method for the List data type used to add values to the
     # list at the end of the existing list.
@@ -96,6 +96,24 @@ add_transaction(tx_amount)
 def hash_block(block):
     return '-'.join([str(block[keys]) for keys in block])
 
+# function to check the balances (amount sent and amount recieved) of the participants in the blockchain environemnt.
+# Implementing the double list comprehension technique where in the 
+#   - first list the result is retreving the transaction.
+#       - In this transaction checking the conditions that identifies the participant if sender or recipient.
+#   - second list the result is retriving the amount from the transaction based on the participant.
+#   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
+def get_balance(participant):
+    tx_sender = [[tx['amount'] for tx in block['transaction'] if tx['sender'] == participant] for block in blockchain]
+    amount_sent = 0
+    for tx in tx_sender:
+        if len(tx) > 0:
+            amount_sent += tx[0]
+    tx_recipient = [[tx['recipient'] for tx in block['transaction'] if tx['recipient'] == participant] for block in blockchain]
+    amount_recieved = 0
+    for tx in tx_recipient:
+        if len(tx) > 0:
+            amount_recieved += tx[0]
+    return amount_recieved - amount_sent
 # Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
 # In order to add the open_transactions to processed transaction a hashing mechanism has to be implemented to make
 # the blockchain secure while mining the blocks.
@@ -116,6 +134,7 @@ def mine_block():
     }
 
     blockchain.append(block)
+    return True
 
 # Function to define the list of participants
 
@@ -159,11 +178,13 @@ while awaiting_input:
         add_transaction(tx_recipient, amount=tx_amount)
         print(open_transactions)
     elif user_choice == '2':
-        mine_block()
+        if mine_block():
+            # Resetting the blockchain to empty block once the mining of block is finished.
+            blockchain = []
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
-        print(participant)
+        print(participants)
     elif user_choice == 'h':
         if len(blockchain) >= 1:
             blockchain[0] = {
@@ -188,7 +209,7 @@ while awaiting_input:
         print_blockchain_elements()
         print('Invalid blockchain.')
         break
-
+    print(get_balance('Manuel'))
 print('DONE.')
 
 
