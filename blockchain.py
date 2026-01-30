@@ -86,6 +86,10 @@ def print_blockchain_elements():
 tx_amount = get_transaction_value()
 add_transaction(tx_amount)
 
+# Function to generate the hashed output of a transaction by expecting a block a input.
+def hash_block(block):
+    return '-'.join([str(block[keys]) for keys in block])
+
 # Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
 # In order to add the open_transactions to processed transaction a hashing mechanism has to be implemented to make
 # the blockchain secure while mining the blocks.
@@ -96,7 +100,7 @@ def mine_block():
     # For now a easy way to implement hashing is to used the stringified version of all the key values from the block.
     # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
     # values to the string format.
-    hashed_block = '-'.join([str(last_block[keys]) for keys in last_block])
+    hashed_block = hash_block(last_block)
     print(hashed_block)
     
     block = {
@@ -109,17 +113,16 @@ def mine_block():
 
 # Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
 def verify_blockchain():
-    is_valid = True
-    for block_index in range(len(blockchain)):
-        if block_index == 0:
+    # modifying the verify_blockchain function which verifies the current block with previous blocks.
+    # Veification is done by comparing the hash key values which is "previous_hash" in every block.
+    # So in order to compare the list [blockchain] with the dictionary {transaction} in a loop, python has a build in
+    # method called enumerate -> enumerate() converts the list into tuple which in terms looks alike like a dictionary. 
+    for (index, block) in enumerate(blockchain):
+        if index == 0:
             continue
-        elif blockchain[block_index][0] == blockchain[block_index - 1]:
-            is_valid = True 
-        else:
-            is_valid = False
-            break
-        block_index += 1
-    return is_valid
+        if block['previous_hash'] != hash_block(blockchain[index - 1]):
+            return False
+    return True
 
 awaiting_input = True
 
@@ -151,7 +154,16 @@ while awaiting_input:
         print_blockchain_elements()
     elif user_choice == 'h':
         if len(blockchain) >= 1:
-            blockchain[0] = [2]
+            blockchain[0] = {
+                'previous_hash': '',
+                'index': 0,
+                'transaction': [{
+                    'sender': 'Chris',
+                    'recipient': 'Max',
+                    'amount': 100.0
+                }]
+            }
+
     elif user_choice == 'q':
         # break -> breaks the current execution and quits out of the loop
         # continue -> continue stops executing the current condition and starts the loop execution  from the first.
@@ -160,10 +172,10 @@ while awaiting_input:
     else:
         print('Invalid input. Please select something from the list of choices.')
     # print('Checking the continue execution.')
-    # if not verify_blockchain():
-    #     print_blockchain_elements()
-    #     print('Invalid blockchain.')
-    #     break
+    if not verify_blockchain():
+        print_blockchain_elements()
+        print('Invalid blockchain.')
+        break
 
 print('DONE.')
 
