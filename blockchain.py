@@ -21,6 +21,10 @@ open_transactions = []
 # Defining the variable owner which for now represents the sender for any transaction for the local instance of blockchain.
 owner = 'SAI'
 
+# participant -> User who is willing to do a transacation.
+# Participant here is data type of SET which ignores the duplicate values.
+participants = {'Manuel'}
+
 # following a convention that each function should perform single task for implementing code redability
 # and maintainability in the application.
 def get_last_transaction_value():
@@ -51,6 +55,8 @@ def add_transaction(recipient, sender = owner, amount=1.0):
         'amount': amount
     }
     open_transactions.append(transaction)
+    participants.append(sender)
+    participants.append(recipient)
 
     # append() -> It is the built in python method for the List data type used to add values to the
     # list at the end of the existing list.
@@ -111,6 +117,8 @@ def mine_block():
 
     blockchain.append(block)
 
+# Function to define the list of participants
+
 # Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
 def verify_blockchain():
     # modifying the verify_blockchain function which verifies the current block with previous blocks.
@@ -118,6 +126,7 @@ def verify_blockchain():
     # So in order to compare the list [blockchain] with the dictionary {transaction} in a loop, python has a build in
     # method called enumerate -> enumerate() converts the list into tuple which in terms looks alike like a dictionary. 
     for (index, block) in enumerate(blockchain):
+        # print(block, 'verify_block')
         if index == 0:
             continue
         if block['previous_hash'] != hash_block(blockchain[index - 1]):
@@ -133,6 +142,7 @@ while awaiting_input:
     print('1: Add a new transaction value.')
     print('2: Mine Block')
     print('3: Output the blocks of the blockchain.')
+    print('4: Output list of participants.')
     print('h: Manipulate the block.')
     print('q: Quit')
 
@@ -152,6 +162,8 @@ while awaiting_input:
         mine_block()
     elif user_choice == '3':
         print_blockchain_elements()
+    elif user_choice == '4':
+        print(participant)
     elif user_choice == 'h':
         if len(blockchain) >= 1:
             blockchain[0] = {
