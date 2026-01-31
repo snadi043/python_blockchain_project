@@ -163,6 +163,10 @@ def mine_block():
     blockchain.append(block)
     return True
 
+# Function to verify all the transactions.
+def verify_transactions():
+    return all ([verify_transaction(tx) for tx in open_transactions])
+
 
 # Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
 def verify_blockchain():
@@ -189,6 +193,7 @@ while awaiting_input:
     print('2: Mine Block')
     print('3: Output the blocks of the blockchain.')
     print('4: Output list of participants.')
+    print('5: Verify all transactions validity.')
     print('h: Manipulate the block.')
     print('q: Quit')
 
@@ -214,6 +219,11 @@ while awaiting_input:
         print_blockchain_elements()
     elif user_choice == '4':
         print(participants)
+    elif user_choice == '5':
+        if verify_transactions():
+            print('All transactions are valid.')
+        else: 
+            print('Invalid transactions are present.')
     elif user_choice == 'h':
         if len(blockchain) >= 1:
             blockchain[0] = {
