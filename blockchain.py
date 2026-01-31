@@ -11,6 +11,9 @@ genesis_block = {
     'transactions': []
 }
 
+# This is the amount that will be added to the participant who is performing the mining process and gets it as a reward.
+MINING_REWARD = 10
+
 # The term blockchain is the varibale representation in python.
 # There are no keywords like var, int, const in python.
 blockchain = [genesis_block]
@@ -25,6 +28,7 @@ owner = 'SAI'
 # Participant here is data type of SET which ignores the duplicate values.
 participants = {'Manuel'}
 
+
 # following a convention that each function should perform single task for implementing code redability
 # and maintainability in the application.
 def get_last_transaction_value():
@@ -33,6 +37,12 @@ def get_last_transaction_value():
     if len(blockchain) < 1:
         return None
     return blockchain[-1]
+
+
+# Function to check the authenticity of a transaction.
+def verify_transaction(transaction):
+    sender_balance = get_balance(transaction['sender'])
+    return sender_balance >= transaction['amount']
 
 
 # This is the syntax for defining a function in python, which is defined with a "def" keyword
@@ -54,10 +64,12 @@ def add_transaction(recipient, sender = owner, amount=1.0):
         'recipient': recipient,
         'amount': amount
     }
-    open_transactions.append(transaction)
-    participants.add(sender)
-    participants.add(recipient)
-
+    if verify_transaction(transaction):
+        open_transactions.append(transaction)
+        participants.add(sender)
+        participants.add(recipient)
+        return True
+    return False
     # append() -> It is the built in python method for the List data type used to add values to the
     # list at the end of the existing list.
     # The values in the list can be accessed with the position which are called "index" which starts
@@ -74,10 +86,12 @@ def get_transaction_value():
     tx_amount = float(input('Please enter an amount: '))
     return (tx_recipient, tx_amount)
 
+
 # Function to fetch the user input
 def get_user_choice():
     user_input = input('Choose an option: ')
     return user_input
+
 
 # Function to print blockchain elements.
 def print_blockchain_elements():
@@ -92,9 +106,11 @@ def print_blockchain_elements():
 tx_amount = get_transaction_value()
 add_transaction(tx_amount)
 
+
 # Function to generate the hashed output of a transaction by expecting a block a input.
 def hash_block(block):
     return '-'.join([str(block[keys]) for keys in block])
+
 
 # function to check the balances (amount sent and amount recieved) of the participants in the blockchain environemnt.
 # Implementing the double list comprehension technique where in the 
@@ -104,6 +120,10 @@ def hash_block(block):
 #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
 def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transaction'] if tx['sender'] == participant] for block in blockchain]
+    open_transaction_sender = [tx['amount'] for tx in open_transactions['transaction'] if tx['sender'] == participant]
+    
+    # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
+    tx_sender.append(open_transaction_sender)
     amount_sent = 0
     for tx in tx_sender:
         if len(tx) > 0:
@@ -114,29 +134,35 @@ def get_balance(participant):
         if len(tx) > 0:
             amount_recieved += tx[0]
     return amount_recieved - amount_sent
+
+
 # Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
 # In order to add the open_transactions to processed transaction a hashing mechanism has to be implemented to make
 # the blockchain secure while mining the blocks.
 def mine_block():
     last_block = blockchain[-1]
-    hashed_block = ''
     # As mining process has to be secured the hashing process becomes more important to be implemented.
     # For now a easy way to implement hashing is to used the stringified version of all the key values from the block.
     # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
     # values to the string format.
     hashed_block = hash_block(last_block)
-    print(hashed_block)
-    
-    block = {
-        'previous_hash': 'XYZ',
-        'index': len(blockchain),
-        'transaction': open_transactions
+    # mining_reward_transaction is a document which is added to the open transaction for the contribution to perfom mining.
+    mining_reward_transaction = {
+        'sender': 'MINING',
+        'recipient': owner,
+        'amount': MINING_REWARD
     }
-
+    # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
+    copied_transactions = open_transactions[:]
+    copied_transactions.append(mining_reward_transaction)
+    block = {
+        'previous_hash': hashed_block,
+        'index': len(blockchain),
+        'transaction': copied_transactions
+    }
     blockchain.append(block)
     return True
 
-# Function to define the list of participants
 
 # Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
 def verify_blockchain():
@@ -153,6 +179,7 @@ def verify_blockchain():
     return True
 
 awaiting_input = True
+
 
 # While loop is another built in python functionality to loop infinetly till a condition is meet.
 # The syntax for the while loop is as follows.
@@ -175,12 +202,14 @@ while awaiting_input:
         # To add_transaction, the tx_amount has to be passed as argument for which tuple unpacking is needed.
         #  Tuple unpacking is similar to using JS ES6 Feature of Spread and Rest operators.
         tx_recipient, tx_amount = tx_data
-        add_transaction(tx_recipient, amount=tx_amount)
-        print(open_transactions)
+        if add_transaction(tx_recipient, amount=tx_amount):
+            print('Successfully Added Transaction.')
+        else:
+            print('Transaction Failed.')
     elif user_choice == '2':
         if mine_block():
             # Resetting the blockchain to empty block once the mining of block is finished.
-            blockchain = []
+            open_transactions = []
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
@@ -196,7 +225,6 @@ while awaiting_input:
                     'amount': 100.0
                 }]
             }
-
     elif user_choice == 'q':
         # break -> breaks the current execution and quits out of the loop
         # continue -> continue stops executing the current condition and starts the loop execution  from the first.
@@ -218,3 +246,12 @@ print('DONE.')
 # blockchain - list // order matters 
 # block - dictionary // 
 # participants - set //
+
+# shallow copy - Results in only copy of the outer data type but no the internal elements of the outer data type.
+    # shallow copy of [{'name': 'Max'}] -> result in copy of outer list [], but whnen you edit the internal elements like "name"
+    #  the value of the "name" changes in the copied list.
+# Deep copy - Results in the copy of complete value and the data type even for the internal elements which are nested.
+
+# "is" key word is not same as "=="
+    # == just compares the values and the data type of two varaibles but not their reference in memory
+    # is in addition to ==, "is" also compares references in memory.
