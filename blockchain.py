@@ -1,3 +1,8 @@
+# import is the keyword in python which is used to import packages or libraries which are not shipped with python itself.
+# One of such important packages which is also popular is functools.
+# In this functools package we can get the access to use the "reduce()" method which is helpful to optimize the complex math calulations.
+import functools
+
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
 
@@ -123,16 +128,16 @@ def get_balance(participant):
     open_transaction_sender = [tx['amount'] for tx in open_transactions['transaction'] if tx['sender'] == participant]
     
     # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
+    # the reduce() takes in three arguments in which the 
+        # first is a function to handle the elements in the list.
+        # second is a iterable 
+        # third is the list of values to be returned as a result.
     tx_sender.append(open_transaction_sender)
-    amount_sent = 0
-    for tx in tx_sender:
-        if len(tx) > 0:
-            amount_sent += tx[0]
+    amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx) > 0 else 0, tx_sender, 0)
+
     tx_recipient = [[tx['recipient'] for tx in block['transaction'] if tx['recipient'] == participant] for block in blockchain]
-    amount_recieved = 0
-    for tx in tx_recipient:
-        if len(tx) > 0:
-            amount_recieved += tx[0]
+    amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx) > 0 else 0, tx_recipient, 0)
+
     return amount_recieved - amount_sent
 
 
@@ -247,7 +252,11 @@ while awaiting_input:
         print_blockchain_elements()
         print('Invalid blockchain.')
         break
-    print(get_balance('Manuel'))
+    # format() -> It is a python built in method which displays the values in a string according to the 
+    # orders in which they are mentioned in the method. Format accepts any number of variables.
+    # The placeholder for displaying the varibale values when using the format method also accepts the 
+    # formating in terms of decimal notations and limit of charecters in the string.
+    print('Balance of {} is {:6.2f}'.format('Manuel', get_balance('Manuel')))
 print('DONE.')
 
 
