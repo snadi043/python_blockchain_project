@@ -19,7 +19,8 @@ import json
 genesis_block = {
     'previos_hash': '',
     'index': 0,
-    'transactions': []
+    'transactions': [],
+    'proof': 100
 }
 
 # This is the amount that will be added to the participant who is performing the mining process and gets it as a reward.
@@ -139,6 +140,29 @@ def print_blockchain_elements():
 # tx_amount = get_transaction_value()
 # add_transaction(tx_amount)
 
+# valid_proof() - This is the function defined to verify the refactored hashing mechanism.
+# This function accepts three parameters
+    # transactions -> these are all the transactions in the blockchain
+    # previous_hash -> the hash value from the previous transactions in the blockchain
+    # proof -> the code/identification that is integrated into the hash string to then verify among every transaction.
+def valid_proof(transactions, previous_hash, proof):
+    hash = (str(transactions) + str(previous_hash) + str(proof)).encode()
+    hashed_str = hashlib.sha256(hash).hexdigest()
+    print(hashed_str)
+    return hashed_str[0:2] == '00'
+
+
+# proof_of_work() - This is the function which takes care of implementing the "valid_proof" functionality on
+# every transaction by looping it to ensure all the transactions from the open transactions which will be added 
+# to the blockchain are verified and authenticated.
+def proof_of_work():
+    last_block = blockchain[-1]
+    last_hash = hash_block(last_block)
+    proof = 0
+    while not valid_proof(open_transactions, last_hash, proof):
+        proof += 1
+    return proof
+
 
 # Function to generate the hashed output of a transaction by expecting a block a input.
 def hash_block(block):
@@ -161,6 +185,7 @@ def mine_block():
     # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
     # values to the string format.
     hashed_block = hash_block(last_block)
+    proof = proof_of_work()
     # print(hashed_block, 'hashed_block_output')
     # mining_reward_transaction is a document which is added to the open transaction for the contribution to perfom mining.
     mining_reward_transaction = {
@@ -174,7 +199,8 @@ def mine_block():
     block = {
         'previous_hash': hashed_block,
         'index': len(blockchain),
-        'transaction': copied_transactions
+        'transaction': copied_transactions,
+        'proof': proof
     }
     blockchain.append(block)
     return True
@@ -195,6 +221,9 @@ def verify_blockchain():
         if index == 0:
             continue
         if block['previous_hash'] != hash_block(blockchain[index - 1]):
+            return False
+        if not valid_proof(block['transaction'][:-1], block['previous_hash'], block['proof']):
+            print('Proof of work is not valid.')
             return False
     return True
 
@@ -267,7 +296,7 @@ while awaiting_input:
     # orders in which they are mentioned in the method. Format accepts any number of variables.
     # The placeholder for displaying the varibale values when using the format method also accepts the 
     # formating in terms of decimal notations and limit of charecters in the string.
-    print('Balance of {} is {:6.2f}'.format('Manuel', get_balance('Manuel')))
+    print('Balance of {} is {:6.2f}'.format('Manuel', get_balance('SAI')))
 print('DONE.')
 
 
