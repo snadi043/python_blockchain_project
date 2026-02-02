@@ -6,8 +6,12 @@ import functools
 # hashlib is a python package which is packed with hashing related functions/methods which are useful in this application.
 # This package is imported from python standard library.
 import hashlib
-# json is another python built in library to convert the data types into strings.
-import json
+
+# OrderedDict is another method available from "Collections" package which is used to ensure that the order in the dictionary stays the same.
+from collections import OrderedDict 
+
+# Importing own custom modules from another file withing the application.
+from hash_util import hash_256, hash_block
 
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
@@ -93,13 +97,16 @@ def add_transaction(recipient, sender = owner, amount=1.0):
     """
 
     # Defining a transaction which is a dictionary with key/value pairs.
-    transaction = {
-        'sender': sender,
-        'recipient': recipient,
-        'amount': amount
-    }
-    if verify_transaction(transaction):
-        open_transactions.append(transaction)
+    # transaction = {
+    #     'sender': sender,
+    #     'recipient': recipient,
+    #     'amount': amount
+    # }
+    # Refactoring the transactions from regular dictionary into OrderedDict to ensure the order of key,value paris remain same.
+    # OrderedDict accepts list of tuples in a (key, value) format.
+    ordered_transactions = OrderedDict([('sender', sender), ('recipient', recipient), ('amount', amount)])
+    if verify_transaction(ordered_transactions):
+        open_transactions.append(ordered_transactions)
         participants.add(sender)
         participants.add(recipient)
         return True
@@ -147,7 +154,7 @@ def print_blockchain_elements():
     # proof -> the code/identification that is integrated into the hash string to then verify among every transaction.
 def valid_proof(transactions, previous_hash, proof):
     hash = (str(transactions) + str(previous_hash) + str(proof)).encode()
-    hashed_str = hashlib.sha256(hash).hexdigest()
+    hashed_str = hash_256(hash)
     print(hashed_str)
     return hashed_str[0:2] == '00'
 
@@ -164,15 +171,6 @@ def proof_of_work():
     return proof
 
 
-# Function to generate the hashed output of a transaction by expecting a block a input.
-def hash_block(block):
-    # return '-'.join([str(block[keys]) for keys in block])
-    # sha256() - this is a hashing algorithm which is designed to generate the 64 bit hash codes for identical inputs and 
-    # ensures that for every input the hash remains same and cannot be altered. 
-    # block - here the data format of the block is a dictonary but sha256() accepts "string" types only.
-    # so json() - this is used to convert the dictionary into stringified version by using it's internal method dumps().
-    # hexdigest() - Return the digest value as a string of hexadecimal digits.
-    return hashlib.sha256(json.dumps(block).encode()).hexdigest()
 
 
 # Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
@@ -188,11 +186,15 @@ def mine_block():
     proof = proof_of_work()
     # print(hashed_block, 'hashed_block_output')
     # mining_reward_transaction is a document which is added to the open transaction for the contribution to perfom mining.
-    mining_reward_transaction = {
-        'sender': 'MINING',
-        'recipient': owner,
-        'amount': MINING_REWARD
-    }
+    # mining_reward_transaction = {
+    #     'sender': 'MINING',
+    #     'recipient': owner,
+    #     'amount': MINING_REWARD
+    # }
+
+    # Using OrderedDict to represent mining_reward_transaction dictionary
+    mining_reward_transaction = OrderedDict([('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
+    
     # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
     copied_transactions = open_transactions[:]
     copied_transactions.append(mining_reward_transaction)
