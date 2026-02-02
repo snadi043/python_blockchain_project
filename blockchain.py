@@ -3,6 +3,12 @@
 # In this functools package we can get the access to use the "reduce()" method which is helpful to optimize the complex math calulations.
 import functools
 
+# hashlib is a python package which is packed with hashing related functions/methods which are useful in this application.
+# This package is imported from python standard library.
+import hashlib
+# json is another python built in library to convert the data types into strings.
+import json
+
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
 
@@ -44,11 +50,33 @@ def get_last_transaction_value():
     return blockchain[-1]
 
 
+# function to check the balances (amount sent and amount recieved) of the participants in the blockchain environemnt.
+# Implementing the double list comprehension technique where in the 
+#   - first list the result is retreving the transaction.
+#       - In this transaction checking the conditions that identifies the participant if sender or recipient.
+#   - second list the result is retriving the amount from the transaction based on the participant.
+#   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
+def get_balance(participant):
+    tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
+    open_transaction_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
+    # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
+    # the reduce() takes in three arguments in which the 
+        # first is a function to handle the elements in the list.
+        # second is a iterable 
+        # third is the list of values to be returned as a result.
+    tx_sender.append(open_transaction_sender)
+    amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
+
+    tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
+    amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
+
+    return amount_recieved - amount_sent
+
+
 # Function to check the authenticity of a transaction.
 def verify_transaction(transaction):
     sender_balance = get_balance(transaction['sender'])
     return sender_balance >= transaction['amount']
-
 
 # This is the syntax for defining a function in python, which is defined with a "def" keyword
 # followed by name of the function and () and :
@@ -108,37 +136,19 @@ def print_blockchain_elements():
     else:
         print('-' * 20)
 
-tx_amount = get_transaction_value()
-add_transaction(tx_amount)
+# tx_amount = get_transaction_value()
+# add_transaction(tx_amount)
 
 
 # Function to generate the hashed output of a transaction by expecting a block a input.
 def hash_block(block):
-    return '-'.join([str(block[keys]) for keys in block])
-
-
-# function to check the balances (amount sent and amount recieved) of the participants in the blockchain environemnt.
-# Implementing the double list comprehension technique where in the 
-#   - first list the result is retreving the transaction.
-#       - In this transaction checking the conditions that identifies the participant if sender or recipient.
-#   - second list the result is retriving the amount from the transaction based on the participant.
-#   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
-def get_balance(participant):
-    tx_sender = [[tx['amount'] for tx in block['transaction'] if tx['sender'] == participant] for block in blockchain]
-    open_transaction_sender = [tx['amount'] for tx in open_transactions['transaction'] if tx['sender'] == participant]
-    
-    # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
-    # the reduce() takes in three arguments in which the 
-        # first is a function to handle the elements in the list.
-        # second is a iterable 
-        # third is the list of values to be returned as a result.
-    tx_sender.append(open_transaction_sender)
-    amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx) > 0 else 0, tx_sender, 0)
-
-    tx_recipient = [[tx['recipient'] for tx in block['transaction'] if tx['recipient'] == participant] for block in blockchain]
-    amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx) > 0 else 0, tx_recipient, 0)
-
-    return amount_recieved - amount_sent
+    # return '-'.join([str(block[keys]) for keys in block])
+    # sha256() - this is a hashing algorithm which is designed to generate the 64 bit hash codes for identical inputs and 
+    # ensures that for every input the hash remains same and cannot be altered. 
+    # block - here the data format of the block is a dictonary but sha256() accepts "string" types only.
+    # so json() - this is used to convert the dictionary into stringified version by using it's internal method dumps().
+    # hexdigest() - Return the digest value as a string of hexadecimal digits.
+    return hashlib.sha256(json.dumps(block).encode()).hexdigest()
 
 
 # Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
@@ -151,6 +161,7 @@ def mine_block():
     # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
     # values to the string format.
     hashed_block = hash_block(last_block)
+    # print(hashed_block, 'hashed_block_output')
     # mining_reward_transaction is a document which is added to the open transaction for the contribution to perfom mining.
     mining_reward_transaction = {
         'sender': 'MINING',
