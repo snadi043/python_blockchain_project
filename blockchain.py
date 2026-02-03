@@ -3,6 +3,9 @@
 # In this functools package we can get the access to use the "reduce()" method which is helpful to optimize the complex math calulations.
 import functools
 
+# json is another python built in library to convert the data types into strings and vice-versa.
+import json
+
 # hashlib is a python package which is packed with hashing related functions/methods which are useful in this application.
 # This package is imported from python standard library.
 import hashlib
@@ -43,6 +46,62 @@ owner = 'SAI'
 # participant -> User who is willing to do a transacation.
 # Participant here is data type of SET which ignores the duplicate values.
 participants = {'Manuel'}
+
+
+# function to read file
+def load_data():
+    with open('blockchain.txt', mode='r') as f:
+        file_content = f.readlines()
+        global blockchain
+        global open_transactions
+        # json.loads() - as we already know that json package in python is used to convert string type to python dictionaries and vice-versa
+        # So, inorder to convert stringifed version of blockchain and open_transactions into python native dictionary format json helps us with loads() method.
+        blockchain = json.loads(file_content[0][:-1])
+        for block in blockchain:
+            updated_blockchain = []
+            updated_block = {
+                'previous_hash': block['previous_hash'],
+                'index': block['index'],
+                'proof': block['proof'],
+                'transactions': [OrderedDict([
+                    ('sender', tx['sender']), 
+                    ('recipient', tx['recipient']), 
+                    ('amount', tx['amount'])]) 
+                for tx in block['transactions']],
+            }
+            updated_blockchain.append(updated_block)
+        blockchain = updated_blockchain
+        open_transactions = json.loads(file_content[1])
+        updated_transactions = []
+        for transaction in open_transactions:
+            updated_transactions = OrderedDict(
+                [
+                    ('sender', transaction['sender']),
+                    ('recipient', transaction['recipient']),
+                    ('amount', transaction['amount'])
+                ]
+            )
+            updated_transactions.append(updated_transactions)
+        open_transactions = updated_transactions 
+ 
+load_data()
+
+
+# function to write file
+def save_data():
+    # with - this is built in keyword in python when dealing with files and it ensures that the file closes
+    # automatically once the execution of the code is done without using of close() method.
+    # open() - The method open() takes in two parameters 
+    # name of the file
+    # mode in with the file has to be handled.
+    with open('blockchain.txt', mode='w') as f:
+        # here, blockchain and open_transacations are in list format. But, appending into files only works with string format data.
+        # so using str() on the blockchain to avoid errors.
+        # json.dumps() - as we already know that json package in python is used to convert python dictionaries to stringified versions and vice-versa
+        # So, inorder to convert python dictionaries to stringified version of lists of blockchain and open_transactions into python native dictionary format json helps us with dumps() method.
+        f.write(json.dumps(blockchain))
+        f.write('/n')
+        f.write(json.dumps(open_transactions))
 
 
 # following a convention that each function should perform single task for implementing code redability
@@ -109,6 +168,7 @@ def add_transaction(recipient, sender = owner, amount=1.0):
         open_transactions.append(ordered_transactions)
         participants.add(sender)
         participants.add(recipient)
+        save_data()
         return True
     return False
     # append() -> It is the built in python method for the List data type used to add values to the
@@ -262,6 +322,7 @@ while awaiting_input:
         if mine_block():
             # Resetting the blockchain to empty block once the mining of block is finished.
             open_transactions = []
+            save_data()
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':

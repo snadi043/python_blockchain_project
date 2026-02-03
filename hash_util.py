@@ -1,7 +1,7 @@
 # hashlib is a python package which is packed with hashing related functions/methods which are useful in this application.
 # This package is imported from python standard library.
 import hashlib
-# json is another python built in library to convert the data types into strings.
+# json is another python built in library to convert the data types into strings and vice-versa.
 import json
 
 def hash_256(string):
