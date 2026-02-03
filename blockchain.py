@@ -10,11 +10,16 @@ import json
 # This package is imported from python standard library.
 import hashlib
 
+# Pickle is an package shipped with python which helps to handle the data more conviniently when dealing with dictionaries.
+# Pickle converts the data into binary format and can revert back to python compatiable data formats.
+import pickle
+
 # OrderedDict is another method available from "Collections" package which is used to ensure that the order in the dictionary stays the same.
 from collections import OrderedDict 
 
 # Importing own custom modules from another file withing the application.
 from hash_util import hash_256, hash_block
+
 
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
@@ -50,10 +55,17 @@ participants = {'Manuel'}
 
 # function to read file
 def load_data():
-    with open('blockchain.txt', mode='r') as f:
+    with open('blockchain.txt', mode='rb') as f:
+        # file_content = pickle.loads(f.read())
         file_content = f.readlines()
         global blockchain
         global open_transactions
+
+        # blockchain = file_content['chain']
+        # open_transactions = file_content['ot']
+
+        # print('pickle chain', file_content['chain'])
+        # print('pickle open_transactions', file_content['ot'])
         # json.loads() - as we already know that json package in python is used to convert string type to python dictionaries and vice-versa
         # So, inorder to convert stringifed version of blockchain and open_transactions into python native dictionary format json helps us with loads() method.
         blockchain = json.loads(file_content[0][:-1])
@@ -84,7 +96,7 @@ def load_data():
             updated_transactions.append(updated_transactions)
         open_transactions = updated_transactions 
  
-load_data()
+    load_data()
 
 
 # function to write file
@@ -94,13 +106,24 @@ def save_data():
     # open() - The method open() takes in two parameters 
     # name of the file
     # mode in with the file has to be handled.
+
+    # using pickle  
+    # - the extension of the file is changed from .txt to .p to make the file compatiable with pickle library.
+    # - the mode is also changed from 'w' to 'wb' indicating that pickle works with binary format when writing into a file.
+
     with open('blockchain.txt', mode='w') as f:
         # here, blockchain and open_transacations are in list format. But, appending into files only works with string format data.
         # so using str() on the blockchain to avoid errors.
+        # Also, as we know since pickle writes only binary data the line escape charector is not handled in pickle file.
+        # so, the work around is to store the data that has to be modified by the pickle package and escape the line escape. 
+        # pickle_data = {
+        #     'chain': blockchain,
+        #     'ot': open_transactions
+        # }
         # json.dumps() - as we already know that json package in python is used to convert python dictionaries to stringified versions and vice-versa
         # So, inorder to convert python dictionaries to stringified version of lists of blockchain and open_transactions into python native dictionary format json helps us with dumps() method.
         f.write(json.dumps(blockchain))
-        f.write('/n')
+        f.write('\n')
         f.write(json.dumps(open_transactions))
 
 
@@ -121,7 +144,7 @@ def get_last_transaction_value():
 #   - second list the result is retriving the amount from the transaction based on the participant.
 #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
 def get_balance(participant):
-    tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
+    tx_sender = [[tx['amount'] for tx in block['transaction'] if tx['sender'] == participant] for block in blockchain]
     open_transaction_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
     # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
     # the reduce() takes in three arguments in which the 
@@ -131,7 +154,7 @@ def get_balance(participant):
     tx_sender.append(open_transaction_sender)
     amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
-    tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
+    tx_recipient = [[tx['amount'] for tx in block['transaction'] if tx['recipient'] == participant] for block in blockchain]
     amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
     return amount_recieved - amount_sent
@@ -359,7 +382,7 @@ while awaiting_input:
     # orders in which they are mentioned in the method. Format accepts any number of variables.
     # The placeholder for displaying the varibale values when using the format method also accepts the 
     # formating in terms of decimal notations and limit of charecters in the string.
-    print('Balance of {} is {:6.2f}'.format('Manuel', get_balance('SAI')))
+    print('Balance of {} is {:6.2f}'.format('Manuel', get_balance('nadipalli')))
 print('DONE.')
 
 
