@@ -6,10 +6,6 @@ import functools
 # json is another python built in library to convert the data types into strings and vice-versa.
 import json
 
-# hashlib is a python package which is packed with hashing related functions/methods which are useful in this application.
-# This package is imported from python standard library.
-import hashlib
-
 # Pickle is an package shipped with python which helps to handle the data more conviniently when dealing with dictionaries.
 # Pickle converts the data into binary format and can revert back to python compatiable data formats.
 import pickle
@@ -27,20 +23,12 @@ from hash_util import hash_256, hash_block
 # This is the basic python data type which is non primitive and is similar to arrays in JavaScript
 # which is called a "List" in python and it's representation is same as in JS which is []
 
-# genesis_block - It is the first block of the blockchain transaction which initializes the blockchain transactions.
-genesis_block = {
-    'previos_hash': '',
-    'index': 0,
-    'transactions': [],
-    'proof': 100
-}
-
 # This is the amount that will be added to the participant who is performing the mining process and gets it as a reward.
 MINING_REWARD = 10
 
 # The term blockchain is the varibale representation in python.
 # There are no keywords like var, int, const in python.
-blockchain = [genesis_block]
+blockchain = []
 # Open_Transactions is a list which represents the transactions that are under build process.
 # If user wants to add coins then they will be adding that transaction to list of open transactions.
 open_transactions = []
@@ -55,47 +43,74 @@ participants = {'Manuel'}
 
 # function to read file
 def load_data():
-    with open('blockchain.txt', mode='rb') as f:
-        # file_content = pickle.loads(f.read())
-        file_content = f.readlines()
-        global blockchain
-        global open_transactions
+    global blockchain
+    global open_transactions
+    # Using "try" keyword in python, here in load_data() function to execute the handling of errors in the code
+    # more efficiently by addressing the errors which may lead to abrupt program execution and cause damange to 
+    # the uuser experience.
+        # So, the "try" block here first tries to execute the code within it whenever the load_data() function is
+        # triggered in the application. And if there is no error in the code the result is generated from this block.
+    try:
+        with open('blockchain.txt', mode='rb') as f:
+            # file_content = pickle.loads(f.read())
+            file_content = f.readlines()
 
-        # blockchain = file_content['chain']
-        # open_transactions = file_content['ot']
+            # blockchain = file_content['chain']
+            # open_transactions = file_content['ot']
 
-        # print('pickle chain', file_content['chain'])
-        # print('pickle open_transactions', file_content['ot'])
-        # json.loads() - as we already know that json package in python is used to convert string type to python dictionaries and vice-versa
-        # So, inorder to convert stringifed version of blockchain and open_transactions into python native dictionary format json helps us with loads() method.
-        blockchain = json.loads(file_content[0][:-1])
-        for block in blockchain:
-            updated_blockchain = []
-            updated_block = {
-                'previous_hash': block['previous_hash'],
-                'index': block['index'],
-                'proof': block['proof'],
-                'transactions': [OrderedDict([
-                    ('sender', tx['sender']), 
-                    ('recipient', tx['recipient']), 
-                    ('amount', tx['amount'])]) 
-                for tx in block['transactions']],
-            }
-            updated_blockchain.append(updated_block)
-        blockchain = updated_blockchain
-        open_transactions = json.loads(file_content[1])
-        updated_transactions = []
-        for transaction in open_transactions:
-            updated_transactions = OrderedDict(
-                [
-                    ('sender', transaction['sender']),
-                    ('recipient', transaction['recipient']),
-                    ('amount', transaction['amount'])
-                ]
-            )
-            updated_transactions.append(updated_transactions)
-        open_transactions = updated_transactions 
- 
+            # print('pickle chain', file_content['chain'])
+            # print('pickle open_transactions', file_content['ot'])
+            # json.loads() - as we already know that json package in python is used to convert string type to python dictionaries and vice-versa
+            # So, inorder to convert stringifed version of blockchain and open_transactions into python native dictionary format json helps us with loads() method.
+            blockchain = json.loads(file_content[0][:-1])
+            for block in blockchain:
+                updated_blockchain = []
+                updated_block = {
+                    'previous_hash': block['previous_hash'],
+                    'index': block['index'],
+                    'proof': block['proof'],
+                    'transactions': [OrderedDict([
+                        ('sender', tx['sender']), 
+                        ('recipient', tx['recipient']), 
+                        ('amount', tx['amount'])]) 
+                    for tx in block['transaction']],
+                }
+                updated_blockchain.append(updated_block)
+            blockchain = updated_blockchain
+            open_transactions = json.loads(file_content[1])
+            updated_transactions = []
+            for transaction in open_transactions:
+                updated_transactions = OrderedDict(
+                    [
+                        ('sender', transaction['sender']),
+                        ('recipient', transaction['recipient']),
+                        ('amount', transaction['amount'])
+                    ]
+                )
+                updated_transactions.append(updated_transactions)
+            open_transactions = updated_transactions
+    # So, it is also an convention that every try block should be continued with atleast one "except" block.
+    # The purpose of except block is to handle the errors which the try block couldn't handle and which eventually
+    # throws an error and stops the execution of further code.
+    # Python, also gives some in-built Error related Keywords which are related to general error causing scenarios.
+    # For example, In this case (FileNotFoundError) can be used.
+    except (FileNotFoundError, IndexError):
+        # genesis_block - It is the first block of the blockchain transaction which initializes the blockchain transactions.
+        genesis_block = {
+            'previous_hash': '',
+            'index': 0,
+            'transactions': [],
+            'proof': 100
+        }
+        blockchain = [genesis_block]
+
+    # Finally, is the another keyword which can be combined with try/catch block of code which can be used to handle
+    # any code block irrespective of whether it is handled in try or except code block, this code in finally will execute.
+    # This code block is usually good to execute any clean up work that has to be happening for the function.
+    finally:
+        print('cleanup has to be handled here.')
+    
+    
     load_data()
 
 
@@ -111,20 +126,23 @@ def save_data():
     # - the extension of the file is changed from .txt to .p to make the file compatiable with pickle library.
     # - the mode is also changed from 'w' to 'wb' indicating that pickle works with binary format when writing into a file.
 
-    with open('blockchain.txt', mode='w') as f:
-        # here, blockchain and open_transacations are in list format. But, appending into files only works with string format data.
-        # so using str() on the blockchain to avoid errors.
-        # Also, as we know since pickle writes only binary data the line escape charector is not handled in pickle file.
-        # so, the work around is to store the data that has to be modified by the pickle package and escape the line escape. 
-        # pickle_data = {
-        #     'chain': blockchain,
-        #     'ot': open_transactions
-        # }
-        # json.dumps() - as we already know that json package in python is used to convert python dictionaries to stringified versions and vice-versa
-        # So, inorder to convert python dictionaries to stringified version of lists of blockchain and open_transactions into python native dictionary format json helps us with dumps() method.
-        f.write(json.dumps(blockchain))
-        f.write('\n')
-        f.write(json.dumps(open_transactions))
+    try:
+        with open('blockchain.txt', mode='w') as f:
+            # here, blockchain and open_transacations are in list format. But, appending into files only works with string format data.
+            # so using str() on the blockchain to avoid errors.
+            # Also, as we know since pickle writes only binary data the line escape charector is not handled in pickle file.
+            # so, the work around is to store the data that has to be modified by the pickle package and escape the line escape. 
+            # pickle_data = {
+            #     'chain': blockchain,
+            #     'ot': open_transactions
+            # }
+            # json.dumps() - as we already know that json package in python is used to convert python dictionaries to stringified versions and vice-versa
+            # So, inorder to convert python dictionaries to stringified version of lists of blockchain and open_transactions into python native dictionary format json helps us with dumps() method.
+            f.write(json.dumps(blockchain))
+            f.write('\n')
+            f.write(json.dumps(open_transactions))
+    except IOError:
+        print('Unble to write data to the file.')
 
 
 # following a convention that each function should perform single task for implementing code redability
@@ -144,7 +162,7 @@ def get_last_transaction_value():
 #   - second list the result is retriving the amount from the transaction based on the participant.
 #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
 def get_balance(participant):
-    tx_sender = [[tx['amount'] for tx in block['transaction'] if tx['sender'] == participant] for block in blockchain]
+    tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
     open_transaction_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
     # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
     # the reduce() takes in three arguments in which the 
@@ -154,7 +172,7 @@ def get_balance(participant):
     tx_sender.append(open_transaction_sender)
     amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
-    tx_recipient = [[tx['amount'] for tx in block['transaction'] if tx['recipient'] == participant] for block in blockchain]
+    tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
     amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
     return amount_recieved - amount_sent
@@ -252,8 +270,6 @@ def proof_of_work():
     while not valid_proof(open_transactions, last_hash, proof):
         proof += 1
     return proof
-
-
 
 
 # Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
@@ -360,7 +376,7 @@ while awaiting_input:
             blockchain[0] = {
                 'previous_hash': '',
                 'index': 0,
-                'transaction': [{
+                'transactions': [{
                     'sender': 'Chris',
                     'recipient': 'Max',
                     'amount': 100.0
