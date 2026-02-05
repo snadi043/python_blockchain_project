@@ -16,12 +16,50 @@ from collections import OrderedDict
 # Importing own custom modules from another file withing the application.
 from hash_util import hash_256, hash_block
 
+# Importing the custom build "block" class into the file to refactor the "block" related code.
+from classes.block import Block
 
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
 
 # This is the basic python data type which is non primitive and is similar to arrays in JavaScript
 # which is called a "List" in python and it's representation is same as in JS which is []
+
+class Vehicle:
+    def __init__(self, starting_speed = 100):
+        self.top_speed = starting_speed
+        self.__warnings = []
+
+    def drive(self):
+        print('I am not as fasting as going upto {}'.format(self.top_speed))
+    
+    def get_warnings(self, warning_text):
+        if len(self.__warnings) > 0:
+            self.__warnings.append(warning_text)
+    
+    def print_warnings(self):
+        return self.__warnings
+
+class Car(Vehicle):
+    def __init__(self, starting_speed=100):
+        super().__init__(starting_speed=starting_speed)
+        self.message = []
+
+    def brag(self):
+        print('look how cool my car is.')
+    
+    def add_message(self, message):
+        self.message.extend(message)
+
+car1 = Car()
+car1.drive()
+
+car1.get_warnings('First Warning')
+
+car2 = Car(200)
+car2.drive()
+print(car2.print_warnings())
+
 
 # This is the amount that will be added to the participant who is performing the mining process and gets it as a reward.
 MINING_REWARD = 10
@@ -65,16 +103,13 @@ def load_data():
             blockchain = json.loads(file_content[0][:-1])
             for block in blockchain:
                 updated_blockchain = []
-                updated_block = {
-                    'previous_hash': block['previous_hash'],
-                    'index': block['index'],
-                    'proof': block['proof'],
-                    'transactions': [OrderedDict([
+                converted_transacations = [OrderedDict([
                         ('sender', tx['sender']), 
                         ('recipient', tx['recipient']), 
                         ('amount', tx['amount'])]) 
-                    for tx in block['transaction']],
-                }
+                    for tx in block['transaction']]
+                # Used the instance of the Block class and passed the attribute values.
+                updated_block = Block(block['index'], block['previous_hash'], converted_transacations, block['proof'], 0)
                 updated_blockchain.append(updated_block)
             blockchain = updated_blockchain
             open_transactions = json.loads(file_content[1])
@@ -96,12 +131,8 @@ def load_data():
     # For example, In this case (FileNotFoundError) can be used.
     except (FileNotFoundError, IndexError):
         # genesis_block - It is the first block of the blockchain transaction which initializes the blockchain transactions.
-        genesis_block = {
-            'previous_hash': '',
-            'index': 0,
-            'transactions': [],
-            'proof': 100
-        }
+        # Refactored the genesis_block with the Block class instance 
+        genesis_block = Block(0, '', [], 100, 0)
         blockchain = [genesis_block]
 
     # Finally, is the another keyword which can be combined with try/catch block of code which can be used to handle
@@ -138,6 +169,9 @@ def save_data():
             # }
             # json.dumps() - as we already know that json package in python is used to convert python dictionaries to stringified versions and vice-versa
             # So, inorder to convert python dictionaries to stringified version of lists of blockchain and open_transactions into python native dictionary format json helps us with dumps() method.
+                
+            # converting the block into dict format to mitigate the errors.
+            blockchain = [block.__dict__ for block in blockchain]
             f.write(json.dumps(blockchain))
             f.write('\n')
             f.write(json.dumps(open_transactions))
@@ -162,7 +196,8 @@ def get_last_transaction_value():
 #   - second list the result is retriving the amount from the transaction based on the participant.
 #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
 def get_balance(participant):
-    tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
+    # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
+    tx_sender = [[tx['amount'] for tx in block.transactions if tx['sender'] == participant] for block in blockchain]
     open_transaction_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
     # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
     # the reduce() takes in three arguments in which the 
@@ -172,7 +207,7 @@ def get_balance(participant):
     tx_sender.append(open_transaction_sender)
     amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
-    tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
+    tx_recipient = [[tx['amount'] for tx in block.transactions if tx['recipient'] == participant] for block in blockchain]
     amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
     return amount_recieved - amount_sent
@@ -297,12 +332,8 @@ def mine_block():
     # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
     copied_transactions = open_transactions[:]
     copied_transactions.append(mining_reward_transaction)
-    block = {
-        'previous_hash': hashed_block,
-        'index': len(blockchain),
-        'transaction': copied_transactions,
-        'proof': proof
-    }
+    # Refactored the block variable with "Block" class instance.
+    block = Block(len(blockchain), hashed_block, copied_transactions, proof)
     blockchain.append(block)
     return True
 
@@ -321,9 +352,11 @@ def verify_blockchain():
         # print(block, 'verify_block')
         if index == 0:
             continue
-        if block['previous_hash'] != hash_block(blockchain[index - 1]):
+        # Correctly accessing the class attributes of the block from its class instance.
+        if block.previous_hash != hash_block(blockchain[index - 1]):
             return False
-        if not valid_proof(block['transaction'][:-1], block['previous_hash'], block['proof']):
+        # Correctly accessing the class attributes of the block from its class instance.
+        if not valid_proof(block.transaction[:-1], block.previous_hash, block.proof):
             print('Proof of work is not valid.')
             return False
     return True
@@ -340,7 +373,6 @@ while awaiting_input:
     print('3: Output the blocks of the blockchain.')
     print('4: Output list of participants.')
     print('5: Verify all transactions validity.')
-    print('h: Manipulate the block.')
     print('q: Quit')
 
     user_choice = get_user_choice()
@@ -371,17 +403,6 @@ while awaiting_input:
             print('All transactions are valid.')
         else: 
             print('Invalid transactions are present.')
-    elif user_choice == 'h':
-        if len(blockchain) >= 1:
-            blockchain[0] = {
-                'previous_hash': '',
-                'index': 0,
-                'transactions': [{
-                    'sender': 'Chris',
-                    'recipient': 'Max',
-                    'amount': 100.0
-                }]
-            }
     elif user_choice == 'q':
         # break -> breaks the current execution and quits out of the loop
         # continue -> continue stops executing the current condition and starts the loop execution  from the first.
@@ -416,3 +437,13 @@ print('DONE.')
 # "is" key word is not same as "=="
     # == just compares the values and the data type of two varaibles but not their reference in memory
     # is in addition to ==, "is" also compares references in memory.
+
+
+
+# Dividng the code into more organized and granular blocks by implementing the concepts of classes.
+# So, the idea is to have individual classes for
+#     - blockchain (chain, open_transactions, methods)
+#     - block (previous_hash, index, timestamp, transactions, proof_of_work)
+#     - transactions (sender, recipient, amount)
+#     - verification (verification methods)
+#     - node (UI for accepting the user inputs)

@@ -16,7 +16,10 @@ def hash_block(block):
     # so json() - this is used to convert the dictionary into stringified version by using it's internal method dumps().
     # hexdigest() - Return the digest value as a string of hexadecimal digits.
     # sort_keys = True - Ensures that all the key, value pairs in the dictionary stay always in the same order. 
-    return hash_256(json.dumps(block, sort_keys=True).encode())
+    
+    # converting the block into dict format to mitigate the errors.
+    hashable_block = block.__dict__.copy()
+    return hash_256(json.dumps(hashable_block, sort_keys=True).encode())
 
 # from the data type module in python, we have seen that in python dictionaries are internally unordered map.
 # which means when a dictionary is being used in the code there are chances that can happen during the (processing of code or linting of the code,
