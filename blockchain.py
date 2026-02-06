@@ -19,6 +19,7 @@ from hash_util import hash_256, hash_block
 # Importing the custom build "block" class into the file to refactor the "block" related code.
 from classes.block import Block
 from classes.transaction import Transaction
+from classes.verification import Verification
 
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
@@ -146,75 +147,6 @@ def get_last_transaction_value():
         return None
     return blockchain[-1]
 
-
-# function to check the balances (amount sent and amount recieved) of the participants in the blockchain environemnt.
-# Implementing the double list comprehension technique where in the 
-#   - first list the result is retreving the transaction.
-#       - In this transaction checking the conditions that identifies the participant if sender or recipient.
-#   - second list the result is retriving the amount from the transaction based on the participant.
-#   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
-def get_balance(participant):
-    # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
-    
-    # Refactoring the tx_sender, open_transaction_sender by properly accessing the attributes of the Transaction class 
-    tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in blockchain]
-    open_transaction_sender = [tx.amount for tx in open_transactions if tx.sender == participant]
-    # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
-    # the reduce() takes in three arguments in which the 
-        # first is a function to handle the elements in the list.
-        # second is a iterable 
-        # third is the list of values to be returned as a result.
-    tx_sender.append(open_transaction_sender)
-    amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
-
-    tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in blockchain]
-    amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
-
-    return amount_recieved - amount_sent
-
-
-# Function to check the authenticity of a transaction.
-def verify_transaction(transaction):
-    # Refactoring the balance by correctly accessing the attributes of the instance of the Transaction class. 
-    sender_balance = get_balance(transaction.sender)
-    return sender_balance >= transaction.amount
-
-# This is the syntax for defining a function in python, which is defined with a "def" keyword
-# followed by name of the function and () and :
-# The second line of the function has to be indented to get identified by the python compiler
-# in order to execute the code.
-def add_transaction(recipient, sender = owner, amount=1.0):
-    """ Function to perfom the task of adding value/data to the block.
-
-    Arguments: 
-        : sender: Person who is willing to send the coins.
-        : recipient: Person who is suppose to recieve the coins.
-        : amount: Number of coins being used for the transaction.
-    """
-
-    # Defining a transaction which is a dictionary with key/value pairs.
-    # transaction = {
-    #     'sender': sender,
-    #     'recipient': recipient,
-    #     'amount': amount
-    # }
-    # Refactoring the transactions from regular dictionary into OrderedDict to ensure the order of key,value paris remain same.
-    # OrderedDict accepts list of tuples in a (key, value) format.
-
-    # Using Transaction class instance to refactor the ordered_transactions
-    transaction = Transaction(sender, recipient, amount)
-    if verify_transaction(transaction):
-        open_transactions.append(transaction)
-        save_data()
-        return True
-    return False
-    # append() -> It is the built in python method for the List data type used to add values to the
-    # list at the end of the existing list.
-    # The values in the list can be accessed with the position which are called "index" which starts
-    # from 0.
-    # blockchain(-1) ->. represents the accessibility to values from the right, usually it is from left.
-    # print() -> it is another python method used to output the values in the terminal when executed.
-
     
 # Function to fetch the transaction value/data which should now fetch recipient data and amount value.
 # The return type of the function is a tuple becasue it is supposed to be immutatble.
@@ -244,18 +176,6 @@ def print_blockchain_elements():
 # tx_amount = get_transaction_value()
 # add_transaction(tx_amount)
 
-# valid_proof() - This is the function defined to verify the refactored hashing mechanism.
-# This function accepts three parameters
-    # transactions -> these are all the transactions in the blockchain
-    # previous_hash -> the hash value from the previous transactions in the blockchain
-    # proof -> the code/identification that is integrated into the hash string to then verify among every transaction.
-def valid_proof(transactions, previous_hash, proof):
-    # Using the Transaction class method "to_ordered_dict" on each transaction in the transactions dictionary.
-    hash = (str([tx.to_ordered_dict() for tx in transactions]) + str(previous_hash) + str(proof)).encode()
-    hashed_str = hash_256(hash)
-    print(hashed_str)
-    return hashed_str[0:2] == '00'
-
 
 # proof_of_work() - This is the function which takes care of implementing the "valid_proof" functionality on
 # every transaction by looping it to ensure all the transactions from the open transactions which will be added 
@@ -264,7 +184,8 @@ def proof_of_work():
     last_block = blockchain[-1]
     last_hash = hash_block(last_block)
     proof = 0
-    while not valid_proof(open_transactions, last_hash, proof):
+    verifier = Verification()
+    while not verifier.valid_proof(open_transactions, last_hash, proof):
         proof += 1
     return proof
 
@@ -304,32 +225,72 @@ def mine_block():
     finally:
         print('Mine block code completed...')
 
-# Function to verify all the transactions.
-def verify_transactions():
-    return all ([verify_transaction(tx) for tx in open_transactions])
+
+# This is the syntax for defining a function in python, which is defined with a "def" keyword
+# followed by name of the function and () and :
+# The second line of the function has to be indented to get identified by the python compiler
+# in order to execute the code.
+def add_transaction(recipient, sender = owner, amount=1.0):
+    """ Function to perfom the task of adding value/data to the block.
+
+    Arguments: 
+        : sender: Person who is willing to send the coins.
+        : recipient: Person who is suppose to recieve the coins.
+        : amount: Number of coins being used for the transaction.
+    """
+
+    # Defining a transaction which is a dictionary with key/value pairs.
+    # transaction = {
+    #     'sender': sender,
+    #     'recipient': recipient,
+    #     'amount': amount
+    # }
+    # Refactoring the transactions from regular dictionary into OrderedDict to ensure the order of key,value paris remain same.
+    # OrderedDict accepts list of tuples in a (key, value) format.
+
+    # Using Transaction class instance to refactor the ordered_transactions
+    transaction = Transaction(sender, recipient, amount)
+    verifier = Verification()
+    if verifier.verify_transaction(transaction, get_balance):
+        open_transactions.append(transaction)
+        save_data()
+        return True
+    return False
+    # append() -> It is the built in python method for the List data type used to add values to the
+    # list at the end of the existing list.
+    # The values in the list can be accessed with the position which are called "index" which starts
+    # from 0.
+    # blockchain(-1) ->. represents the accessibility to values from the right, usually it is from left.
+    # print() -> it is another python method used to output the values in the terminal when executed.
 
 
-# Function to verify the blockchain is valid by comparing the previous blocks in the blockchain by their values.
-def verify_blockchain():
-    # modifying the verify_blockchain function which verifies the current block with previous blocks.
-    # Veification is done by comparing the hash key values which is "previous_hash" in every block.
-    # So in order to compare the list [blockchain] with the dictionary {transaction} in a loop, python has a build in
-    # method called enumerate -> enumerate() converts the list into tuple which in terms looks alike like a dictionary. 
-    for (index, block) in enumerate(blockchain):
-        # print(block, 'verify_block')
-        if index == 0:
-            continue
-        # Correctly accessing the class attributes of the block from its class instance.
-        if block.previous_hash != hash_block(blockchain[index - 1]):
-            return False
-        # Correctly accessing the class attributes of the block from its class instance.
-        if not valid_proof(block.transaction[:-1], block.previous_hash, block.proof):
-            print('Proof of work is not valid.')
-            return False
-    return True
+# function to check the balances (amount sent and amount recieved) of the participants in the blockchain environemnt.
+# Implementing the double list comprehension technique where in the 
+#   - first list the result is retreving the transaction.
+#       - In this transaction checking the conditions that identifies the participant if sender or recipient.
+#   - second list the result is retriving the amount from the transaction based on the participant.
+#   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
+def get_balance(participant):
+# Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
+
+# Refactoring the tx_sender, open_transaction_sender by properly accessing the attributes of the Transaction class 
+    tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in blockchain]
+    open_transaction_sender = [tx.amount for tx in open_transactions if tx.sender == participant]
+    # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
+    # the reduce() takes in three arguments in which the 
+        # first is a function to handle the elements in the list.
+        # second is a iterable 
+        # third is the list of values to be returned as a result.
+    tx_sender.append(open_transaction_sender)
+    amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
+
+    tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in blockchain]
+    amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
+
+    return amount_recieved - amount_sent
+    
 
 awaiting_input = True
-
 
 # While loop is another built in python functionality to loop infinetly till a condition is meet.
 # The syntax for the while loop is as follows.
@@ -363,7 +324,8 @@ while awaiting_input:
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
-        if verify_transactions():
+        verifier = Verification()
+        if verifier.verify_transactions(open_transactions):
             print('All transactions are valid.')
         else: 
             print('Invalid transactions are present.')
@@ -375,7 +337,8 @@ while awaiting_input:
     else:
         print('Invalid input. Please select something from the list of choices.')
     # print('Checking the continue execution.')
-    if not verify_blockchain():
+    verifier = Verification()
+    if not verifier.verify_blockchain(blockchain):
         print_blockchain_elements()
         print('Invalid blockchain.')
         break
