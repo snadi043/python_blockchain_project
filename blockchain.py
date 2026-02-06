@@ -18,48 +18,13 @@ from hash_util import hash_256, hash_block
 
 # Importing the custom build "block" class into the file to refactor the "block" related code.
 from classes.block import Block
+from classes.transaction import Transaction
 
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
 
 # This is the basic python data type which is non primitive and is similar to arrays in JavaScript
 # which is called a "List" in python and it's representation is same as in JS which is []
-
-class Vehicle:
-    def __init__(self, starting_speed = 100):
-        self.top_speed = starting_speed
-        self.__warnings = []
-
-    def drive(self):
-        print('I am not as fasting as going upto {}'.format(self.top_speed))
-    
-    def get_warnings(self, warning_text):
-        if len(self.__warnings) > 0:
-            self.__warnings.append(warning_text)
-    
-    def print_warnings(self):
-        return self.__warnings
-
-class Car(Vehicle):
-    def __init__(self, starting_speed=100):
-        super().__init__(starting_speed=starting_speed)
-        self.message = []
-
-    def brag(self):
-        print('look how cool my car is.')
-    
-    def add_message(self, message):
-        self.message.extend(message)
-
-car1 = Car()
-car1.drive()
-
-car1.get_warnings('First Warning')
-
-car2 = Car(200)
-car2.drive()
-print(car2.print_warnings())
-
 
 # This is the amount that will be added to the participant who is performing the mining process and gets it as a reward.
 MINING_REWARD = 10
@@ -103,25 +68,17 @@ def load_data():
             blockchain = json.loads(file_content[0][:-1])
             for block in blockchain:
                 updated_blockchain = []
-                converted_transacations = [OrderedDict([
-                        ('sender', tx['sender']), 
-                        ('recipient', tx['recipient']), 
-                        ('amount', tx['amount'])]) 
-                    for tx in block['transaction']]
+                # Refactoring the converted_tx by using the instance of the Transaction class 
+                converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transaction']]
                 # Used the instance of the Block class and passed the attribute values.
-                updated_block = Block(block['index'], block['previous_hash'], converted_transacations, block['proof'], 0)
+                updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], 0)
                 updated_blockchain.append(updated_block)
             blockchain = updated_blockchain
             open_transactions = json.loads(file_content[1])
             updated_transactions = []
             for transaction in open_transactions:
-                updated_transactions = OrderedDict(
-                    [
-                        ('sender', transaction['sender']),
-                        ('recipient', transaction['recipient']),
-                        ('amount', transaction['amount'])
-                    ]
-                )
+                # Refactoring the updated_transactions by using the instance of the Transaction class 
+                updated_transactions = Transaction(transaction['sender'], transaction['recipient'], transaction['amount'])
                 updated_transactions.append(updated_transactions)
             open_transactions = updated_transactions
     # So, it is also an convention that every try block should be continued with atleast one "except" block.
@@ -171,9 +128,10 @@ def save_data():
             # So, inorder to convert python dictionaries to stringified version of lists of blockchain and open_transactions into python native dictionary format json helps us with dumps() method.
                 
             # converting the block into dict format to mitigate the errors.
-            blockchain = [block.__dict__ for block in blockchain]
+            blockchain = [block.__dict__ for block in [Block(block_el.index, block_el.previous_hash, [tx.__dict__ for tx in block_el.transactions], block_el.timestamp) for block_el in blockchain]]
             f.write(json.dumps(blockchain))
             f.write('\n')
+            open_transactions = [tx.__dict__ for tx in open_transactions]
             f.write(json.dumps(open_transactions))
     except IOError:
         print('Unble to write data to the file.')
@@ -197,8 +155,10 @@ def get_last_transaction_value():
 #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
 def get_balance(participant):
     # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
-    tx_sender = [[tx['amount'] for tx in block.transactions if tx['sender'] == participant] for block in blockchain]
-    open_transaction_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
+    
+    # Refactoring the tx_sender, open_transaction_sender by properly accessing the attributes of the Transaction class 
+    tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in blockchain]
+    open_transaction_sender = [tx.amount for tx in open_transactions if tx.sender == participant]
     # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
     # the reduce() takes in three arguments in which the 
         # first is a function to handle the elements in the list.
@@ -207,7 +167,7 @@ def get_balance(participant):
     tx_sender.append(open_transaction_sender)
     amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
-    tx_recipient = [[tx['amount'] for tx in block.transactions if tx['recipient'] == participant] for block in blockchain]
+    tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in blockchain]
     amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
     return amount_recieved - amount_sent
@@ -215,8 +175,9 @@ def get_balance(participant):
 
 # Function to check the authenticity of a transaction.
 def verify_transaction(transaction):
-    sender_balance = get_balance(transaction['sender'])
-    return sender_balance >= transaction['amount']
+    # Refactoring the balance by correctly accessing the attributes of the instance of the Transaction class. 
+    sender_balance = get_balance(transaction.sender)
+    return sender_balance >= transaction.amount
 
 # This is the syntax for defining a function in python, which is defined with a "def" keyword
 # followed by name of the function and () and :
@@ -239,11 +200,11 @@ def add_transaction(recipient, sender = owner, amount=1.0):
     # }
     # Refactoring the transactions from regular dictionary into OrderedDict to ensure the order of key,value paris remain same.
     # OrderedDict accepts list of tuples in a (key, value) format.
-    ordered_transactions = OrderedDict([('sender', sender), ('recipient', recipient), ('amount', amount)])
-    if verify_transaction(ordered_transactions):
-        open_transactions.append(ordered_transactions)
-        participants.add(sender)
-        participants.add(recipient)
+
+    # Using Transaction class instance to refactor the ordered_transactions
+    transaction = Transaction(sender, recipient, amount)
+    if verify_transaction(transaction):
+        open_transactions.append(transaction)
         save_data()
         return True
     return False
@@ -289,7 +250,8 @@ def print_blockchain_elements():
     # previous_hash -> the hash value from the previous transactions in the blockchain
     # proof -> the code/identification that is integrated into the hash string to then verify among every transaction.
 def valid_proof(transactions, previous_hash, proof):
-    hash = (str(transactions) + str(previous_hash) + str(proof)).encode()
+    # Using the Transaction class method "to_ordered_dict" on each transaction in the transactions dictionary.
+    hash = (str([tx.to_ordered_dict() for tx in transactions]) + str(previous_hash) + str(proof)).encode()
     hashed_str = hash_256(hash)
     print(hashed_str)
     return hashed_str[0:2] == '00'
@@ -311,31 +273,36 @@ def proof_of_work():
 # In order to add the open_transactions to processed transaction a hashing mechanism has to be implemented to make
 # the blockchain secure while mining the blocks.
 def mine_block():
-    last_block = blockchain[-1]
-    # As mining process has to be secured the hashing process becomes more important to be implemented.
-    # For now a easy way to implement hashing is to used the stringified version of all the key values from the block.
-    # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
-    # values to the string format.
-    hashed_block = hash_block(last_block)
-    proof = proof_of_work()
-    # print(hashed_block, 'hashed_block_output')
-    # mining_reward_transaction is a document which is added to the open transaction for the contribution to perfom mining.
-    # mining_reward_transaction = {
-    #     'sender': 'MINING',
-    #     'recipient': owner,
-    #     'amount': MINING_REWARD
-    # }
+    try:
+        last_block = blockchain[-1]
+        # As mining process has to be secured the hashing process becomes more important to be implemented.
+        # For now a easy way to implement hashing is to used the stringified version of all the key values from the block.
+        # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
+        # values to the string format.
+        hashed_block = hash_block(last_block)
+        proof = proof_of_work()
+        # print(hashed_block, 'hashed_block_output')
+        # mining_reward_transaction is a document which is added to the open transaction for the contribution to perfom mining.
+        # mining_reward_transaction = {
+        #     'sender': 'MINING',
+        #     'recipient': owner,
+        #     'amount': MINING_REWARD
+        # }
 
-    # Using OrderedDict to represent mining_reward_transaction dictionary
-    mining_reward_transaction = OrderedDict([('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
-    
-    # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
-    copied_transactions = open_transactions[:]
-    copied_transactions.append(mining_reward_transaction)
-    # Refactored the block variable with "Block" class instance.
-    block = Block(len(blockchain), hashed_block, copied_transactions, proof)
-    blockchain.append(block)
-    return True
+        # Using OrderedDict to represent mining_reward_transaction dictionary
+        mining_reward_transaction = Transaction('MINING', owner, MINING_REWARD)
+        
+        # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
+        copied_transactions = open_transactions[:]
+        copied_transactions.append(mining_reward_transaction)
+        # Refactored the block variable with "Block" class instance.
+        block = Block(len(blockchain), hashed_block, copied_transactions, proof)
+        blockchain.append(block)
+        return True
+    except IndexError:
+        print('List Index may be out of range.')
+    finally:
+        print('Mine block code completed...')
 
 # Function to verify all the transactions.
 def verify_transactions():
