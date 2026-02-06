@@ -6,7 +6,7 @@ class Verification:
     # Function to check the authenticity of a transaction.
     def verify_transaction(self, transaction, get_balance):
         # Refactoring the balance by correctly accessing the attributes of the instance of the Transaction class. 
-        sender_balance = get_balance(transaction.sender)
+        sender_balance = get_balance()
         return sender_balance >= transaction.amount
     
     

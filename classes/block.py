@@ -5,7 +5,7 @@
 # importing the "time" package to use it in the class to represent the timestamp value.
 from time import time
 # importing the "printable" class from the printable file to use it as inheritance concept in the Block class to see the class attributes.
-from classes.printable import Printable
+from printable import Printable
 # Every class has to start with a "class" keyword followed by name of the class in CamelCase format. 
 # The below line represents the expression of inheritance in python.
 class Block(Printable):
