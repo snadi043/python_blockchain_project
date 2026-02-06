@@ -41,7 +41,7 @@ owner = 'SAI'
 
 # participant -> User who is willing to do a transacation.
 # Participant here is data type of SET which ignores the duplicate values.
-participants = {'Manuel'}
+# participants = {'Manuel'}
 
 
 # function to read file
@@ -338,8 +338,7 @@ while awaiting_input:
     print('1: Add a new transaction value.')
     print('2: Mine Block')
     print('3: Output the blocks of the blockchain.')
-    print('4: Output list of participants.')
-    print('5: Verify all transactions validity.')
+    print('4: Verify all transactions validity.')
     print('q: Quit')
 
     user_choice = get_user_choice()
@@ -364,8 +363,6 @@ while awaiting_input:
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
-        print(participants)
-    elif user_choice == '5':
         if verify_transactions():
             print('All transactions are valid.')
         else: 
