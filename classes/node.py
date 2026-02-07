@@ -29,7 +29,7 @@ class Node:
     def print_blockchain_elements(self):
         # For loop is the in built python functionality which helps to loop through the iterable data types, here it is "list".
         # The syntax of for loop is as written below.
-        for block in self.blockchain.chain:
+        for block in self.blockchain.return__chain():
             print('Outputting the blocks.')
             print(block)
         else:
@@ -64,13 +64,13 @@ class Node:
                     print('Successfully Added Transaction.')
                 else:
                     print('Transaction Failed.')
-                print(self.blockchain.open_transactions)    
+                print(self.blockchain.return_open_transactions())    
             elif user_choice == '2':
                 self.blockchain.mine_block()
             elif user_choice == '3':
                 self.print_blockchain_elements()
             elif user_choice == '4':
-                if Verification.verify_transactions(self.blockchain.open_transactions, self.blockchain.get_balance):
+                if Verification.verify_transactions(self.blockchain.return_open_transactions(), self.blockchain.get_balance):
                     print('All transactions are valid.')
                 else: 
                     print('Invalid transactions are present.')
@@ -82,7 +82,7 @@ class Node:
             else:
                 print('Invalid input. Please select something from the list of choices.')
             # print('Checking the continue execution.')
-            if not Verification.verify_blockchain(self.blockchain.chain):
+            if not Verification.verify_blockchain(self.blockchain.return__chain()):
                 self.print_blockchain_elements()
                 print('Invalid blockchain.')
                 break

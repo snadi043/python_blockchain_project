@@ -46,15 +46,22 @@ class Blockchain:
         genesis_block = Block(0, '', [], 100, 0)
         # The term blockchain is the varibale representation in python.
         # There are no keywords like var, int, const in python.
-        self.chain = [genesis_block]
-        # Open_Transactions is a list which represents the transactions that are under build process.
+        self.__chain = [genesis_block]
+        # __open_transactions is a list which represents the transactions that are under build process.
         # If user wants to add coins then they will be adding that transaction to list of open transactions.
-        self.open_transactions = []
+        self.__open_transactions = []
         self.load_data()
         self.hosting_node = hosting_node_id
 
+    # function to output the private attributes of the block__chain class to avoid accessing these attributes elsewhere
+    # in the application and refactoring them which helps to avoid unseen errors.
+    def return__chain(self):
+        return self.__chain[:]
     
-    # Making the load_data() as the method of the blockchain. 
+    def return_open_transactions(self):
+        return self.__open_transactions[:]
+    
+    # Making the load_data() as the method of the block__chain. 
     # function to read file
     def load_data(self):
         # Using "try" keyword in python, here in load_data() function to execute the handling of errors in the code
@@ -68,12 +75,12 @@ class Blockchain:
                 file_content = f.readlines()
 
                 # blockchain = file_content['chain']
-                # open_transactions = file_content['ot']
+                # __open_transactions = file_content['ot']
 
                 # print('pickle chain', file_content['chain'])
-                # print('pickle open_transactions', file_content['ot'])
+                # print('pickle __open_transactions', file_content['ot'])
                 # json.loads() - as we already know that json package in python is used to convert string type to python dictionaries and vice-versa
-                # So, inorder to convert stringifed version of blockchain and open_transactions into python native dictionary format json helps us with loads() method.
+                # So, inorder to convert stringifed version of blockchain and __open_transactions into python native dictionary format json helps us with loads() method.
                 blockchain = json.loads(file_content[0][:-1])
                 for block in blockchain:
                     updated_blockchain = []
@@ -82,14 +89,14 @@ class Blockchain:
                     # Used the instance of the Block class and passed the attribute values.
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], 0)
                     updated_blockchain.append(updated_block)
-                self.chain = updated_blockchain
-                open_transactions = json.loads(file_content[1])
+                self.__chain = updated_blockchain
+                __open_transactions = json.loads(file_content[1])
                 updated_transactions = []
-                for transaction in open_transactions:
+                for transaction in __open_transactions:
                     # Refactoring the updated_transactions by using the instance of the Transaction class 
                     updated_transactions = Transaction(transaction['sender'], transaction['recipient'], transaction['amount'])
                     updated_transactions.append(updated_transactions)
-                self.open_transactions = updated_transactions
+                self.__open_transactions = updated_transactions
         # So, it is also an convention that every try block should be continued with atleast one "except" block.
         # The purpose of except block is to handle the errors which the try block couldn't handle and which eventually
         # throws an error and stops the execution of further code.
@@ -125,17 +132,17 @@ class Blockchain:
                 # so, the work around is to store the data that has to be modified by the pickle package and escape the line escape. 
                 # pickle_data = {
                 #     'chain': blockchain,
-                #     'ot': open_transactions
+                #     'ot': __open_transactions
                 # }
                 # json.dumps() - as we already know that json package in python is used to convert python dictionaries to stringified versions and vice-versa
-                # So, inorder to convert python dictionaries to stringified version of lists of blockchain and open_transactions into python native dictionary format json helps us with dumps() method.
+                # So, inorder to convert python dictionaries to stringified version of lists of blockchain and __open_transactions into python native dictionary format json helps us with dumps() method.
                     
                 # converting the block into dict format to mitigate the errors.
-                blockchain = [block.__dict__ for block in [Block(block_el.index, block_el.previous_hash, [tx.__dict__ for tx in block_el.transactions], block_el.timestamp) for block_el in self.chain]]
+                blockchain = [block.__dict__ for block in [Block(block_el.index, block_el.previous_hash, [tx.__dict__ for tx in block_el.transactions], block_el.timestamp) for block_el in self.__chain]]
                 f.write(json.dumps(blockchain))
                 f.write('\n')
-                open_transactions = [tx.__dict__ for tx in self.open_transactions]
-                f.write(json.dumps(open_transactions))
+                __open_transactions = [tx.__dict__ for tx in self.__open_transactions]
+                f.write(json.dumps(__open_transactions))
         except IOError:
             print('Unble to write data to the file.')
 
@@ -144,10 +151,10 @@ class Blockchain:
     # every transaction by looping it to ensure all the transactions from the open transactions which will be added 
     # to the blockchain are verified and authenticated.
     def proof_of_work(self):
-        last_block = self.chain[-1]
+        last_block = self.__chain[-1]
         last_hash = hash_block(last_block)
         proof = 0
-        while not Verification.valid_proof(self.open_transactions, last_hash, proof):
+        while not Verification.valid_proof(self.__open_transactions, last_hash, proof):
             proof += 1
         return proof
     
@@ -163,8 +170,8 @@ class Blockchain:
     # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
 
     # Refactoring the tx_sender, open_transaction_sender by properly accessing the attributes of the Transaction class 
-        tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in self.chain]
-        open_transaction_sender = [tx.amount for tx in self.open_transactions if tx.sender == participant]
+        tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in self.__chain]
+        open_transaction_sender = [tx.amount for tx in self.__open_transactions if tx.sender == participant]
         # Here, the sender is checked with the balance for his transactions both in open transactions and processed transactions in the blockchain.
         # the reduce() takes in three arguments in which the 
             # first is a function to handle the elements in the list.
@@ -173,7 +180,7 @@ class Blockchain:
         tx_sender.append(open_transaction_sender)
         amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
-        tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in self.chain]
+        tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in self.__chain]
         amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
         return amount_recieved - amount_sent
@@ -184,9 +191,9 @@ class Blockchain:
     def get_last_transaction_value(self):
         """ Function to return the last block from the blockchain."""
         # checking the length of the blockchain list so that conditional ouputting of blocks can be handled.
-        if len(self.chain) < 1:
+        if len(self.__chain) < 1:
             return None
-        return self.chain[-1]
+        return self.__chain[-1]
 
 
     # This is the syntax for defining a function in python, which is defined with a "def" keyword
@@ -214,7 +221,7 @@ class Blockchain:
         # Using Transaction class instance to refactor the ordered_transactions
         transaction = Transaction(sender, recipient, amount)
         if Verification.verify_transaction(transaction, self.get_balance):
-            self.open_transactions.append(transaction)
+            self.__open_transactions.append(transaction)
             self.save_data()
             return True
         return False
@@ -227,11 +234,11 @@ class Blockchain:
 
 
     # Function repsonsible to mine blocks and add the open transactions to actual list of processed transactions.
-    # In order to add the open_transactions to processed transaction a hashing mechanism has to be implemented to make
+    # In order to add the __open_transactions to processed transaction a hashing mechanism has to be implemented to make
     # the blockchain secure while mining the blocks.
     def mine_block(self):
         try:
-            last_block = self.chain[-1]
+            last_block = self.__chain[-1]
             # As mining process has to be secured the hashing process becomes more important to be implemented.
             # For now a easy way to implement hashing is to used the stringified version of all the key values from the block.
             # In order to do so, lets loop through all the keys in the block dictionary and access the values and convert the
@@ -250,13 +257,13 @@ class Blockchain:
             mining_reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
             
             # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
-            copied_transactions = self.open_transactions[:]
+            copied_transactions = self.__open_transactions[:]
             copied_transactions.append(mining_reward_transaction)
             # Refactored the block variable with "Block" class instance.
-            block = Block(len(self.chain), hashed_block, copied_transactions, proof)
-            self.chain.append(block)
+            block = Block(len(self.__chain), hashed_block, copied_transactions, proof)
+            self.__chain.append(block)
             # Resetting the blockchain to empty block once the mining of block is finished.
-            self.open_transactions = []
+            self.__open_transactions = []
             self.save_data()
             return True
         except IndexError:
@@ -285,7 +292,7 @@ class Blockchain:
 
 # Dividng the code into more organized and granular blocks by implementing the concepts of classes.
 # So, the idea is to have individual classes for
-#     - blockchain (chain, open_transactions, methods)
+#     - blockchain (chain, __open_transactions, methods)
 #     - block (previous_hash, index, timestamp, transactions, proof_of_work)
 #     - transactions (sender, recipient, amount)
 #     - verification (verification methods)
