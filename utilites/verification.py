@@ -1,7 +1,8 @@
 # This file represents the verification class in which the methods from the "blockchain.py" file are executed to reuse them efficiently.
 
 # Importing own custom modules from another file withing the application.
-from hash_util import hash_256, hash_block
+from utilites.hash_util import hash_block, hash_256
+
 class Verification:
     # Function to check the authenticity of a transaction.
     @staticmethod

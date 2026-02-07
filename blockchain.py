@@ -14,12 +14,12 @@ import pickle
 from collections import OrderedDict 
 
 # Importing own custom modules from another file withing the application.
-from hash_util import hash_block, hash_256
+from utilites.hash_util import hash_block
+from utilites.verification import Verification
 
 # Importing the custom build "block" class into the file to refactor the "block" related code.
 from block import Block
 from transaction import Transaction
-from verification import Verification
 
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.

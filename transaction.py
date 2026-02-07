@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from printable import Printable
+from utilites.printable import Printable
 
 class Transaction(Printable):
     def __init__(self, sender, recipient, amount):
