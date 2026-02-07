@@ -78,7 +78,7 @@ class Blockchain:
                 for block in blockchain:
                     updated_blockchain = []
                     # Refactoring the converted_tx by using the instance of the Transaction class 
-                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transaction']]
+                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]
                     # Used the instance of the Block class and passed the attribute values.
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], 0)
                     updated_blockchain.append(updated_block)
@@ -259,7 +259,7 @@ class Blockchain:
             self.chain.append(block)
             # Resetting the blockchain to empty block once the mining of block is finished.
             self.open_transactions = []
-            self.chain.save_data()
+            self.save_data()
             return True
         except IndexError:
             print('List Index may be out of range.')

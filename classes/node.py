@@ -6,7 +6,8 @@ from uuid import uuid4
 # blockchain.py file are refactored into the methods of this Node class.
 class Node:
     def __init__(self):
-        self.id = uuid4()
+        # self.id = str(uuid4())
+        self.id = 'MAX'
         self.blockchain = Blockchain(self.id)
 
     # Function to fetch the transaction value/data which should now fetch recipient data and amount value.
@@ -69,8 +70,8 @@ class Node:
             elif user_choice == '3':
                 self.print_blockchain_elements()
             elif user_choice == '4':
-                verifier = Verification()
-                if verifier.verify_transactions(self.blockchain.open_transactions):
+                verifier = Verification() 
+                if verifier.verify_transactions(self.blockchain.open_transactions, self.blockchain.get_balance):
                     print('All transactions are valid.')
                 else: 
                     print('Invalid transactions are present.')
