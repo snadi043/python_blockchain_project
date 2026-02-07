@@ -46,7 +46,7 @@ class Verification:
             if block.previous_hash != hash_block(blockchain[index - 1]):
                 return False
             # Correctly accessing the class attributes of the block from its class instance.
-            if not self.valid_proof(block.transactions[:-1], block.previous_hash, block.proof):
+            if not cls.valid_proof(block.transactions[:-1], block.previous_hash, block.proof):
                 print('Proof of work is not valid.')
                 return False
         return True

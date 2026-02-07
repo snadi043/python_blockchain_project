@@ -50,17 +50,9 @@ class Blockchain:
         # __open_transactions is a list which represents the transactions that are under build process.
         # If user wants to add coins then they will be adding that transaction to list of open transactions.
         self.__open_transactions = []
-        self.load_data()
         self.hosting_node = hosting_node_id
 
-    # function to output the private attributes of the block__chain class to avoid accessing these attributes elsewhere
-    # in the application and refactoring them which helps to avoid unseen errors.
-    def return__chain(self):
-        return self.__chain[:]
-    
-    def return_open_transactions(self):
-        return self.__open_transactions[:]
-    
+
     # Making the load_data() as the method of the block__chain. 
     # function to read file
     def load_data(self):
@@ -109,6 +101,17 @@ class Blockchain:
         # This code block is usually good to execute any clean up work that has to be happening for the function.
         finally:
             print('cleanup has to be handled here.')
+        
+        self.load_data()
+
+    # function to output the private attributes of the block__chain class to avoid accessing these attributes elsewhere
+    # in the application and refactoring them which helps to avoid unseen errors.
+    def return__chain(self):
+        return self.__chain[:]
+    
+    def return_open_transactions(self):
+        return self.__open_transactions[:]
+    
         
         
     # Making the save_data() as the method of the blockchain. 
