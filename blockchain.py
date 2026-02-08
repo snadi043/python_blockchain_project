@@ -14,8 +14,8 @@ import pickle
 from collections import OrderedDict 
 
 # Importing own custom modules from another file withing the application.
-from utilites.hash_util import hash_block
-from utilites.verification import Verification
+from utilities.hash_util import hash_block
+from utilities.verification import Verification
 
 # Importing the custom build "block" class into the file to refactor the "block" related code.
 from block import Block

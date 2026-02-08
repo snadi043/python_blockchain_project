@@ -1,5 +1,5 @@
 from blockchain import Blockchain
-from utilites.verification import Verification
+from utilities.verification import Verification
 from uuid import uuid4
 
 # This file is responsible for representing the user choices of the blockchain application and all the functions from the 
