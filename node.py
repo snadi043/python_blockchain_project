@@ -94,5 +94,19 @@ class Node:
         print('DONE.')
 
 
-node = Node()
-node.accepting_user_inputs()
+# Configuiring __name__ and __main__
+# Similar to all other dhunder (__) methods, python provides us with another dhunder method which is __main__
+# The main purpose of __name__ and __main__ method, is to know whether the particular file is being executed when we call for 
+# the file execution like python3 name_of_file.py
+# or if the file is being imported when any other file is called by python and gets executed.
+
+# This condition seems to be not so useful, until the condition which is similar to the below code.
+# Here, we are calling for the execution of the node.py file and if this is the case then we start the process of executing
+# the application accordingly by accepting the user inputs.
+
+# checking the condition 
+if __name__ == "__main__":
+    node = Node()
+    node.accepting_user_inputs()
+
+print(__name__)

@@ -8,6 +8,10 @@ from time import time
 from utilities.printable import Printable
 # Every class has to start with a "class" keyword followed by name of the class in CamelCase format. 
 # The below line represents the expression of inheritance in python.
+
+print(__name__)
+
+
 class Block(Printable):
     # In order to use the attributes by every instance of the class without modifying the original class attributes
     # all the attributes have to be initialized by the method "__init__()"
