@@ -2,13 +2,15 @@ from blockchain import Blockchain
 from utilities.verification import Verification
 from uuid import uuid4
 
+from wallet import Wallet
+
 # This file is responsible for representing the user choices of the blockchain application and all the functions from the 
 # blockchain.py file are refactored into the methods of this Node class.
 class Node:
     def __init__(self):
         # self.id = str(uuid4())
-        self.id = 'MAX'
-        self.blockchain = Blockchain(self.id)
+        self.wallet = Wallet
+        self.blockchain = Blockchain(self.wallet.public_key)
 
     # Function to fetch the transaction value/data which should now fetch recipient data and amount value.
     # The return type of the function is a tuple becasue it is supposed to be immutatble.
@@ -48,6 +50,8 @@ class Node:
             print('2: Mine Block')
             print('3: Output the blocks of the blockchain.')
             print('4: Verify all transactions validity.')
+            print('5: Create Wallet')
+            print('6: Load Wallet')
             print('q: Quit')
 
             user_choice = self.get_user_choice()
@@ -60,7 +64,7 @@ class Node:
                 # To add_transaction, the tx_amount has to be passed as argument for which tuple unpacking is needed.
                 #  Tuple unpacking is similar to using JS ES6 Feature of Spread and Rest operators.
                 tx_recipient, tx_amount = tx_data
-                if self.blockchain.add_transaction(tx_recipient, self.id, amount=tx_amount):
+                if self.blockchain.add_transaction(tx_recipient, self.wallet.public_key, amount=tx_amount):
                     print('Successfully Added Transaction.')
                 else:
                     print('Transaction Failed.')
@@ -74,6 +78,10 @@ class Node:
                     print('All transactions are valid.')
                 else: 
                     print('Invalid transactions are present.')
+            elif user_choice == '5':
+                self.wallet.create_keys()
+            elif user_choice == '6':
+                pass
             elif user_choice == 'q':
                 # break -> breaks the current execution and quits out of the loop
                 # continue -> continue stops executing the current condition and starts the loop execution  from the first.
@@ -90,7 +98,7 @@ class Node:
             # orders in which they are mentioned in the method. Format accepts any number of variables.
             # The placeholder for displaying the varibale values when using the format method also accepts the 
             # formating in terms of decimal notations and limit of charecters in the string.
-            print('Balance of {} is {:6.2f}'.format(self.id, self.blockchain.get_balance()))
+            print('Balance of {} is {:6.2f}'.format(self.wallet.public_key, self.blockchain.get_balance()))
         print('DONE.')
 
 
