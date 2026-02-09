@@ -204,6 +204,8 @@ class Blockchain:
     # The second line of the function has to be indented to get identified by the python compiler
     # in order to execute the code.
     def add_transaction(self, recipient, sender, amount=1.0):
+        if self.hosting_node == None:
+            return False
         """ Function to perfom the task of adding value/data to the block.
 
         Arguments: 
@@ -240,6 +242,8 @@ class Blockchain:
     # In order to add the __open_transactions to processed transaction a hashing mechanism has to be implemented to make
     # the blockchain secure while mining the blocks.
     def mine_block(self):
+        if self.hosting_node == None:
+            return False
         try:
             last_block = self.__chain[-1]
             # As mining process has to be secured the hashing process becomes more important to be implemented.

@@ -9,8 +9,8 @@ from wallet import Wallet
 class Node:
     def __init__(self):
         # self.id = str(uuid4())
-        self.wallet = Wallet
-        self.blockchain = Blockchain(self.wallet.public_key)
+        self.wallet = Wallet()
+        self.blockchain = None
 
     # Function to fetch the transaction value/data which should now fetch recipient data and amount value.
     # The return type of the function is a tuple becasue it is supposed to be immutatble.
@@ -70,7 +70,8 @@ class Node:
                     print('Transaction Failed.')
                 print(self.blockchain.return_open_transactions())    
             elif user_choice == '2':
-                self.blockchain.mine_block()
+                if not self.blockchain.mine_block():
+                    print('Unable to mine a block. Wallet not available.')
             elif user_choice == '3':
                 self.print_blockchain_elements()
             elif user_choice == '4':
@@ -80,6 +81,7 @@ class Node:
                     print('Invalid transactions are present.')
             elif user_choice == '5':
                 self.wallet.create_keys()
+                self.blockchain = Blockchain(self.wallet.public_key)
             elif user_choice == '6':
                 pass
             elif user_choice == 'q':
