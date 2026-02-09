@@ -10,7 +10,8 @@ class Node:
     def __init__(self):
         # self.id = str(uuid4())
         self.wallet = Wallet()
-        self.blockchain = None
+        self.wallet.create_keys()
+        self.blockchain = Blockchain(self.wallet.public_key)
 
     # Function to fetch the transaction value/data which should now fetch recipient data and amount value.
     # The return type of the function is a tuple becasue it is supposed to be immutatble.
@@ -50,8 +51,9 @@ class Node:
             print('2: Mine Block')
             print('3: Output the blocks of the blockchain.')
             print('4: Verify all transactions validity.')
-            print('5: Create Wallet')
-            print('6: Load Wallet')
+            print('5: Create Keys')
+            print('6: Load Keys')
+            print('7: Save Keys')
             print('q: Quit')
 
             user_choice = self.get_user_choice()
@@ -83,7 +85,10 @@ class Node:
                 self.wallet.create_keys()
                 self.blockchain = Blockchain(self.wallet.public_key)
             elif user_choice == '6':
-                pass
+                self.wallet.load_keys()
+                self.blockchain = Blockchain(self.wallet.public_key)
+            elif user_choice == '7':
+                self.wallet.save_keys()
             elif user_choice == 'q':
                 # break -> breaks the current execution and quits out of the loop
                 # continue -> continue stops executing the current condition and starts the loop execution  from the first.
