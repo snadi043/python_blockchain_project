@@ -20,6 +20,7 @@ from utilities.verification import Verification
 # Importing the custom build "block" class into the file to refactor the "block" related code.
 from block import Block
 from transaction import Transaction
+from wallet import Wallet
 
 # This is the initial project setup file to understand the basics of python and make the mind around
 # the blockchain and crypto currency environemnt using python principles.
@@ -264,6 +265,9 @@ class Blockchain:
             
             # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
             copied_transactions = self.__open_transactions[:]
+            for tx in block.transactions:
+                if not Wallet.verify_transactions(tx):
+                    return False
             copied_transactions.append(mining_reward_transaction)
             # Refactored the block variable with "Block" class instance.
             block = Block(len(self.__chain), hashed_block, copied_transactions, proof)

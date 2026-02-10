@@ -2,14 +2,18 @@
 
 # Importing own custom modules from another file withing the application.
 from utilities.hash_util import hash_block, hash_256
+from wallet import Wallet
 
 class Verification:
     # Function to check the authenticity of a transaction.
     @staticmethod
-    def verify_transaction(transaction, get_balance):
-        # Refactoring the balance by correctly accessing the attributes of the instance of the Transaction class. 
-        sender_balance = get_balance()
-        return sender_balance >= transaction.amount
+    def verify_transaction(transaction, get_balance, check_funds = True):
+        if check_funds: 
+            # Refactoring the balance by correctly accessing the attributes of the instance of the Transaction class. 
+            sender_balance = get_balance()
+            return sender_balance >= transaction.amount and Wallet.verify_transactions(transaction)
+        else:
+            return Wallet.verify_transactions(transaction)
     
     
     # Function to verify all the transactions.
