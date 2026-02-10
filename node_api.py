@@ -4,13 +4,15 @@
 # CORS - Cross Origin Request Frogery, It is a procedure that makes the server understand that requests coming from the same origin
 # like the browser/client has to be enabled and provide the response accordingly.
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from wallet import Wallet
+from blockchain import Blockchain
 
 # Initializing the Flask framework in the application.
 app = Flask(__name__)
 wallet = Wallet()
+blockchain = Blockchain(wallet.public_key)
 # Implementing the CORS features on the app by wrapping it. 
 CORS(app)
 
@@ -18,6 +20,16 @@ CORS(app)
 @app.route('/', methods=['GET'])
 def get_ui():
     return 'This is working...'
+
+
+@app.route('/blockchain', methods=['GET'])
+def get_blockchain():
+    blockchain_snapshot = blockchain.return__chain()
+    dict_blockchain_snapshot = [block.__dict__.copy() for block in blockchain_snapshot]
+    for dict_blockchain_block in dict_blockchain_snapshot:
+        dict_blockchain_block['transactions'] = [tx.__dict__ for tx in dict_blockchain_block['transactions']]
+    return jsonify(dict_blockchain_snapshot), 200
+
 
 # Defining the host and the port for the server to run the application.
 if __name__ == "__main__":
