@@ -66,7 +66,8 @@ class Node:
                 # To add_transaction, the tx_amount has to be passed as argument for which tuple unpacking is needed.
                 #  Tuple unpacking is similar to using JS ES6 Feature of Spread and Rest operators.
                 tx_recipient, tx_amount = tx_data
-                if self.blockchain.add_transaction(tx_recipient, self.wallet.public_key, amount=tx_amount):
+                signature = self.wallet.sign_transactions(self.wallet.public_key, tx_recipient, tx_amount)
+                if self.blockchain.add_transaction(tx_recipient, self.wallet.public_key, signature, amount=tx_amount):
                     print('Successfully Added Transaction.')
                 else:
                     print('Transaction Failed.')

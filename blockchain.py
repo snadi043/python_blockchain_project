@@ -77,7 +77,7 @@ class Blockchain:
                 for block in blockchain:
                     updated_blockchain = []
                     # Refactoring the converted_tx by using the instance of the Transaction class 
-                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in block['transactions']]
+                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount'], tx['signature']) for tx in block['transactions']]
                     # Used the instance of the Block class and passed the attribute values.
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], 0)
                     updated_blockchain.append(updated_block)
@@ -86,7 +86,7 @@ class Blockchain:
                 updated_transactions = []
                 for transaction in __open_transactions:
                     # Refactoring the updated_transactions by using the instance of the Transaction class 
-                    updated_transactions = Transaction(transaction['sender'], transaction['recipient'], transaction['amount'])
+                    updated_transactions = Transaction(transaction['sender'], transaction['recipient'], transaction['amount'], transaction['signature'])
                     updated_transactions.append(updated_transactions)
                 self.__open_transactions = updated_transactions
         # So, it is also an convention that every try block should be continued with atleast one "except" block.
@@ -112,7 +112,6 @@ class Blockchain:
     def return_open_transactions(self):
         return self.__open_transactions[:]
     
-        
         
     # Making the save_data() as the method of the blockchain. 
     # function to write file
@@ -203,7 +202,7 @@ class Blockchain:
     # followed by name of the function and () and :
     # The second line of the function has to be indented to get identified by the python compiler
     # in order to execute the code.
-    def add_transaction(self, recipient, sender, amount=1.0):
+    def add_transaction(self, recipient, sender, signature, amount=1.0):
         if self.hosting_node == None:
             return False
         """ Function to perfom the task of adding value/data to the block.
@@ -224,7 +223,7 @@ class Blockchain:
         # OrderedDict accepts list of tuples in a (key, value) format.
 
         # Using Transaction class instance to refactor the ordered_transactions
-        transaction = Transaction(sender, recipient, amount)
+        transaction = Transaction(sender, recipient, amount, signature)
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
@@ -261,7 +260,7 @@ class Blockchain:
             # }
 
             # Using OrderedDict to represent mining_reward_transaction dictionary
-            mining_reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
+            mining_reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD, '')
             
             # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
             copied_transactions = self.__open_transactions[:]
