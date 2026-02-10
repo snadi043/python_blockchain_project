@@ -33,6 +33,26 @@ def get_blockchain():
     return jsonify(dict_blockchain_snapshot), 200
 
 
+# POST method to handle the response to add the block into the blockchain
+@app.route('/mineblock', methods=['POST'])
+def mineblock():
+    block = blockchain.mine_block()
+    if block != None:
+        dict_block = block.__dict__.copy() 
+        dict_block['transactions'] = [tx.__dict__ for tx in dict_block['transactions']]
+        response = {
+            'message': 'Successfully added block to blockchain',
+            'block': dict_block
+        }
+        return jsonify(response), 201
+    else:
+        response = {
+            'message': 'Unable to add the block.',
+            'wallet-setup': wallet.public_key != None
+        }
+        return jsonify(response), 500
+
+
 # Defining the host and the port for the server to run the application.
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)

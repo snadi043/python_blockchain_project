@@ -243,7 +243,7 @@ class Blockchain:
     # the blockchain secure while mining the blocks.
     def mine_block(self):
         if self.hosting_node == None:
-            return False
+            return None
         try:
             last_block = self.__chain[-1]
             # As mining process has to be secured the hashing process becomes more important to be implemented.
@@ -267,7 +267,7 @@ class Blockchain:
             copied_transactions = self.__open_transactions[:]
             for tx in block.transactions:
                 if not Wallet.verify_transactions(tx):
-                    return False
+                    return None
             copied_transactions.append(mining_reward_transaction)
             # Refactored the block variable with "Block" class instance.
             block = Block(len(self.__chain), hashed_block, copied_transactions, proof)
@@ -275,7 +275,7 @@ class Blockchain:
             # Resetting the blockchain to empty block once the mining of block is finished.
             self.__open_transactions = []
             self.save_data()
-            return True
+            return block
         except IndexError:
             print('List Index may be out of range.')
         finally:
