@@ -21,11 +21,13 @@ CORS(app)
 def get_ui():
     return 'This is working...'
 
-
+# GET method to handle the respose to display the list of blocks in the blockchain.
 @app.route('/blockchain', methods=['GET'])
 def get_blockchain():
     blockchain_snapshot = blockchain.return__chain()
+    # converting the blockchain list into a dictionary to avoid python parsing erros. 
     dict_blockchain_snapshot = [block.__dict__.copy() for block in blockchain_snapshot]
+    # Also changing the internal data and its data type to avoid errors with respect to transactions.
     for dict_blockchain_block in dict_blockchain_snapshot:
         dict_blockchain_block['transactions'] = [tx.__dict__ for tx in dict_blockchain_block['transactions']]
     return jsonify(dict_blockchain_snapshot), 200
