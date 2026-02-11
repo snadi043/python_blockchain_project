@@ -169,6 +169,9 @@ class Blockchain:
     #   - second list the result is retriving the amount from the transaction based on the participant.
     #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
     def get_balance(self):
+        # Validation to check if the hosting_node exists in the blockchain when fetching the balance.
+        if self.hosting_node == None:
+            return None
         participant = self.hosting_node
     # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
 

@@ -4,7 +4,7 @@
 # CORS - Cross Origin Request Frogery, It is a procedure that makes the server understand that requests coming from the same origin
 # like the browser/client has to be enabled and provide the response accordingly.
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from wallet import Wallet
 from blockchain import Blockchain
@@ -36,12 +36,13 @@ def get_blockchain():
 @app.route('/wallet', methods=['GET'])
 def load_keys():
     if wallet.load_keys():
-        response = {
-            'public_key': wallet.public_key,
-            'private_key': wallet.private_key
-        }
         global blockchain
         blockchain = Blockchain(wallet.public_key)
+        response = {
+            'public_key': wallet.public_key,
+            'private_key': wallet.private_key,
+            'funds': blockchain.get_balance()
+        }
         return jsonify(response), 200
     else:
         response = {
@@ -55,12 +56,13 @@ def load_keys():
 def save_keys():
     wallet.create_keys()
     if wallet.save_keys():
-        response = {
-            'public_key': wallet.public_key,
-            'private_key': wallet.private_key
-        }
         global blockchain
         blockchain = Blockchain(wallet.public_key)
+        response = {
+            'public_key': wallet.public_key,
+            'private_key': wallet.private_key,
+            'funds': blockchain.get_balance()
+        }
         return jsonify(response), 201
     else:
         response = {
@@ -77,7 +79,8 @@ def mineblock():
         dict_block['transactions'] = [tx.__dict__ for tx in dict_block['transactions']]
         response = {
             'message': 'Successfully added block to blockchain',
-            'block': dict_block
+            'block': dict_block,
+            'funds': blockchain.get_balance()
         }
         return jsonify(response), 201
     else:
@@ -87,6 +90,64 @@ def mineblock():
         }
         return jsonify(response), 500
 
+# GET method to handle the response to fetch the balance with respect to the wallet of the user.
+@app.route('/balance', methods=['GET'])
+def get_balance():
+    balance = blockchain.get_balance()
+    if balance != None:
+        response = {
+            'message': 'Successfully fetched the balance.',
+            'funds': blockchain.get_balance()
+        }
+        return jsonify(response), 200
+    else:
+        response = {
+            'message': 'Unable to fetch the balance.',
+            'wallet_setup': wallet.public_key != None
+        }
+        return jsonify(response), 500
+
+# POST method to handle the response to post the transaction with respect to the input given by the user using request().
+@app.route('/add-transaction', methods=['POST'])
+def add_transaction():
+    if wallet.public_key == None:
+        response = {
+            'message': 'Wallet is not available.'
+        }
+        return jsonify(response), 400
+    values = request.get_json()
+    if not values:
+        response = {
+            'message': 'User Input Values are not fetched.'
+        }
+        return jsonify(response), 400
+    required_fields = ['recipient', 'amount']
+    if not all (field in values for field in required_fields):
+        response = {
+            'message': 'Required fields in the transactions are not available.',
+        }
+        return jsonify(response), 400
+    recipient = values['recipient']
+    amount = values['amount']
+    signature = wallet.sign_transactions(wallet.public_key, recipient, amount)
+    success = blockchain.add_transaction(recipient, wallet.public_key, signature, amount)
+    if success:
+        response = {
+            'message': 'Successfully added all the transaction data.',
+            'transaction': {
+                'sender': wallet.public_key,
+                'recipient': recipient,
+                'amount': amount,
+            },
+            'funds': blockchain.get_balance()
+        }
+        return jsonify(response), 201
+    else:
+        response = {
+            'message': 'Unable to add transaction to the blockchain.'
+        }
+        return jsonify(response), 500
+    
 
 # Defining the host and the port for the server to run the application.
 if __name__ == "__main__":
