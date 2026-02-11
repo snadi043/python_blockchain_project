@@ -32,6 +32,41 @@ def get_blockchain():
         dict_blockchain_block['transactions'] = [tx.__dict__ for tx in dict_blockchain_block['transactions']]
     return jsonify(dict_blockchain_snapshot), 200
 
+# GET method to handle the response to fetch the keys with respect to the wallet of the user
+@app.route('/wallet', methods=['GET'])
+def load_keys():
+    if wallet.load_keys():
+        response = {
+            'public_key': wallet.public_key,
+            'private_key': wallet.private_key
+        }
+        global blockchain
+        blockchain = Blockchain(wallet.public_key)
+        return jsonify(response), 200
+    else:
+        response = {
+            'message': 'Unable to load keys.',
+        }
+        return jsonify(response), 500
+
+
+# POST method to handle the response to post the keys with respect to the wallet of the user
+@app.route('/wallet', methods=['POST'])
+def save_keys():
+    wallet.create_keys()
+    if wallet.save_keys():
+        response = {
+            'public_key': wallet.public_key,
+            'private_key': wallet.private_key
+        }
+        global blockchain
+        blockchain = Blockchain(wallet.public_key)
+        return jsonify(response), 201
+    else:
+        response = {
+            'message': 'Unable to save keys.',
+        }
+        return jsonify(response), 500
 
 # POST method to handle the response to add the block into the blockchain
 @app.route('/mineblock', methods=['POST'])
