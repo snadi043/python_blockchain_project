@@ -107,6 +107,14 @@ def get_balance():
         }
         return jsonify(response), 500
 
+# GET method to handle the response to fetch all the transactions.
+@app.route('/transactions', methods=['GET'])
+def get_transactions():
+    transactions = blockchain.return_open_transactions()
+    dict_transactions = [tx.__dict__ for tx in transactions]
+    return jsonify(dict_transactions), 200
+
+
 # POST method to handle the response to post the transaction with respect to the input given by the user using request().
 @app.route('/add-transaction', methods=['POST'])
 def add_transaction():
