@@ -268,7 +268,7 @@ class Blockchain:
             
             # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
             copied_transactions = self.__open_transactions[:]
-            for tx in block.transactions:
+            for tx in copied_transactions:
                 if not Wallet.verify_transactions(tx):
                     return None
             copied_transactions.append(mining_reward_transaction)

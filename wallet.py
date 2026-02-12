@@ -28,8 +28,8 @@ class Wallet:
     def load_keys(self):
         try:
             with open('keys.txt',  mode='r') as f:
-                private_key = f.readlines[0][:-1]
-                public_key = f.readlines[1]
+                private_key = f.readlines(0)
+                public_key = f.readlines(1)
                 self.private_key = private_key
                 self.public_key = public_key
                 return True
@@ -42,8 +42,8 @@ class Wallet:
         if self.public_key != None and self.private_key != None:
             try:
                 with open('keys.txt', mode='w') as f:
-                    f.write[self.private_key]
-                    f.write('/n')
+                    f.write(self.private_key)
+                    f.write('\n')
                     f.write(self.public_key)
                     return True
             except (IOError, IndexError):
@@ -52,7 +52,7 @@ class Wallet:
 
 
     def generate_keys(self):
-        private_key = RSA.generate(1024, Crypto.Random.new().read())
+        private_key = RSA.generate(1024, Crypto.Random.new().read)
         public_key = private_key.public_key()
         return (
             binascii.hexlify(private_key.exportKey(format="DER")).decode(),
