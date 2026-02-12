@@ -169,6 +169,9 @@ class Blockchain:
     #   - second list the result is retriving the amount from the transaction based on the participant.
     #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
     def get_balance(self):
+        # Validation to check if the hosting_node exists in the blockchain when fetching the balance.
+        if self.hosting_node == None:
+            return None
         participant = self.hosting_node
     # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
 
@@ -243,7 +246,7 @@ class Blockchain:
     # the blockchain secure while mining the blocks.
     def mine_block(self):
         if self.hosting_node == None:
-            return False
+            return None
         try:
             last_block = self.__chain[-1]
             # As mining process has to be secured the hashing process becomes more important to be implemented.
@@ -267,7 +270,7 @@ class Blockchain:
             copied_transactions = self.__open_transactions[:]
             for tx in block.transactions:
                 if not Wallet.verify_transactions(tx):
-                    return False
+                    return None
             copied_transactions.append(mining_reward_transaction)
             # Refactored the block variable with "Block" class instance.
             block = Block(len(self.__chain), hashed_block, copied_transactions, proof)
@@ -275,7 +278,7 @@ class Blockchain:
             # Resetting the blockchain to empty block once the mining of block is finished.
             self.__open_transactions = []
             self.save_data()
-            return True
+            return block
         except IndexError:
             print('List Index may be out of range.')
         finally:
