@@ -4,7 +4,7 @@
 # CORS - Cross Origin Request Frogery, It is a procedure that makes the server understand that requests coming from the same origin
 # like the browser/client has to be enabled and provide the response accordingly.
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from wallet import Wallet
 from blockchain import Blockchain
@@ -19,7 +19,7 @@ CORS(app)
 # GET method to handle the initial request to checking the server response on the browser.
 @app.route('/', methods=['GET'])
 def get_ui():
-    return 'This is working...'
+    return send_from_directory('ui', 'node.html')
 
 # GET method to handle the respose to display the list of blocks in the blockchain.
 @app.route('/blockchain', methods=['GET'])
