@@ -278,6 +278,7 @@
                 },
                 onSendTx: function () {
                     // Send Transaction to backend
+                     var vm = this;
                     axios.post('/add-transaction', {
                         recipient: this.outgoingTx.recipient,
                         amount: this.outgoingTx.amount

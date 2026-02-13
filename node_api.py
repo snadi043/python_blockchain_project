@@ -146,6 +146,7 @@ def add_transaction():
                 'sender': wallet.public_key,
                 'recipient': recipient,
                 'amount': amount,
+                'signature': signature
             },
             'funds': blockchain.get_balance()
         }

@@ -1,7 +1,7 @@
 # import is the keyword in python which is used to import packages or libraries which are not shipped with python itself.
 # One of such important packages which is also popular is functools.
 # In this functools package we can get the access to use the "reduce()" method which is helpful to optimize the complex math calulations.
-import functools
+from functools import reduce 
 
 # json is another python built in library to convert the data types into strings and vice-versa.
 import json
@@ -184,10 +184,10 @@ class Blockchain:
             # second is a iterable 
             # third is the list of values to be returned as a result.
         tx_sender.append(open_transaction_sender)
-        amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
+        amount_sent = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
         tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in self.__chain]
-        amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
+        amount_recieved = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
         return amount_recieved - amount_sent
         
@@ -264,7 +264,7 @@ class Blockchain:
             # }
 
             # Using OrderedDict to represent mining_reward_transaction dictionary
-            mining_reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD, '')
+            mining_reward_transaction = Transaction('MINING', self.hosting_node, '', MINING_REWARD)
             
             # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
             copied_transactions = self.__open_transactions[:]
