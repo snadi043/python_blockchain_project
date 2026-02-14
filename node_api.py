@@ -16,10 +16,16 @@ blockchain = Blockchain(wallet.public_key)
 # Implementing the CORS features on the app by wrapping it. 
 CORS(app)
 
-# GET method to handle the initial request to checking the server response on the browser.
+# GET method to handle the GET request to render the server response on the browser for fetching the landing page.
 @app.route('/', methods=['GET'])
-def get_ui():
+def get_node_ui():
     return send_from_directory('ui', 'node.html')
+
+
+# GET method to handle the GET request to render the server response on the browser for fetching the network page.
+@app.route('/network', methods=['GET'])
+def get_network_ui():
+    return send_from_directory('ui', 'network.html')
 
 # GET method to handle the respose to display the list of blocks in the blockchain.
 @app.route('/blockchain', methods=['GET'])
@@ -204,6 +210,7 @@ def remove_node(node_url):
         'peer_nodes': blockchain.get_peer_nodes()
     }
     return jsonify(response), 200
+
 
 
 # Defining the host and the port for the server to run the application.

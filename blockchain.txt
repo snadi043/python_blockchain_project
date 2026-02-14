@@ -1,3 +1,3 @@
-[{"index": 0, "previous_hash": "", "transactions": [], "proof": 0, "timestamp": 1771001477.1102479}]
+[{"index": 0, "previous_hash": "", "transactions": [], "proof": 0, "timestamp": 1771084364.088686}]
 []
-["localhost:8002/"]
+[]
