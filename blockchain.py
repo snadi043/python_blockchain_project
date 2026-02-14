@@ -53,8 +53,8 @@ class Blockchain:
         self.__open_transactions = []
         self.hosting_node = hosting_node_id
         # node is the private variable in the blockchain class which is of set data type which is unique and cannot be repetitive.
-        self.__peer_node = set()
-
+        self.__peer_nodes = set()
+        # self.load_data()
 
     # Making the load_data() as the method of the block__chain. 
     # function to read file
@@ -93,7 +93,7 @@ class Blockchain:
                     updated_transactions.append(updated_transactions)
                 self.__open_transactions = updated_transactions
                 peer_node = json.loads(file_content[2])
-                self.__peer_node = set(peer_node)
+                self.__peer_nodes = set(peer_node)
         # So, it is also an convention that every try block should be continued with atleast one "except" block.
         # The purpose of except block is to handle the errors which the try block couldn't handle and which eventually
         # throws an error and stops the execution of further code.
@@ -151,7 +151,7 @@ class Blockchain:
                 __open_transactions = [tx.__dict__ for tx in self.__open_transactions]
                 f.write(json.dumps(__open_transactions))
                 f.write('\n')
-                f.write(json.dumps(list(self.__peer_node)))
+                f.write(json.dumps(list(self.__peer_nodes)))
         except IOError:
             print('Unble to write data to the file.')
 
@@ -294,7 +294,7 @@ class Blockchain:
     # the node attribute here, refers to the another system or an host url which is considered as another user using the blockchain
     # application once, the blockchain application goes live into the production environment.
     def add_peer_node(self, node):
-        self.__peer_node.add(node)
+        self.__peer_nodes.add(node)
         self.save_data()
 
     
@@ -302,8 +302,13 @@ class Blockchain:
     # the node attribute here, refers to the another system or an host url which is considered as another user using the blockchain
     # application once, the blockchain application goes live into the production environment.
     def remove_peer_node(self, node):
-        self.__peer_node.discard(node)
+        self.__peer_nodes.discard(node)
         self.save_data()
+
+
+    # geet_peer_nodes() -> It is the function responsible to fetch all the nodes from the blockchain.
+    def get_peer_nodes(self):
+        return list(self.__peer_nodes)[:]
 
 # Transaction - Dictionary // key,value pairs
 # Outstanding_transactions - list // Order doesnt matter

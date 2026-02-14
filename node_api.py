@@ -158,6 +158,54 @@ def add_transaction():
         return jsonify(response), 500
     
 
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    nodes = blockchain.get_peer_nodes()
+    response = {
+        'message': 'Successfully fetched all the peer nodes.',
+        'peer_nodes': nodes
+    }
+    return jsonify(response), 200
+
+
+@app.route('/node', methods=['POST'])
+def add_node():
+    values = request.get_json()
+    if not values:
+        response = {
+            'message': 'Something went wrong.'
+        }
+        return jsonify(response), 401
+    if 'peer_nodes' not in values:
+        response = {
+            'message': 'Node details not available.'
+        }
+        return jsonify(response), 402
+    node = values['peer_nodes']
+    blockchain.add_peer_node(node)
+    response = {
+        'message': 'Successfully added the peer node to the blockchain network.',
+        'peer_nodes': blockchain.get_peer_nodes()
+    }
+    return jsonify(response), 201
+
+
+@app.route('/node/<node_url>', methods=['DELETE'])
+def remove_node(node_url):
+    if node_url == '' or node_url == None:
+        response = {
+            'message': 'Node not found to delete.'
+        }
+        return jsonify(response), 400
+    blockchain.remove_peer_node(node_url)
+    response = {
+        'message': 'Successfully deleted the node from the blockchain network.',
+        'peer_nodes': blockchain.get_peer_nodes()
+    }
+    return jsonify(response), 200
+
+
 # Defining the host and the port for the server to run the application.
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
