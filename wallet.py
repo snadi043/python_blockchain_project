@@ -28,8 +28,9 @@ class Wallet:
     def load_keys(self):
         try:
             with open('keys.txt',  mode='r') as f:
-                private_key = f.readlines[0][:-1]
-                public_key = f.readlines[1]
+                keys = f.readlines()
+                private_key = keys[0][:-1]
+                public_key = keys[1]
                 self.private_key = private_key
                 self.public_key = public_key
                 return True
@@ -42,8 +43,8 @@ class Wallet:
         if self.public_key != None and self.private_key != None:
             try:
                 with open('keys.txt', mode='w') as f:
-                    f.write[self.private_key]
-                    f.write('/n')
+                    f.write(self.private_key)
+                    f.write('\n')
                     f.write(self.public_key)
                     return True
             except (IOError, IndexError):
@@ -52,17 +53,17 @@ class Wallet:
 
 
     def generate_keys(self):
-        private_key = RSA.generate(1024, Crypto.Random.new().read())
+        private_key = RSA.generate(1024, Crypto.Random.new().read)
         public_key = private_key.public_key()
         return (
-            binascii.hexlify(private_key.exportKey(format="DER")).decode(),
-            binascii.hexlify(public_key.exportKey(format="DER")).decode(),
+            binascii.hexlify(private_key.exportKey(format="DER")).decode('ascii'),
+            binascii.hexlify(public_key.exportKey(format="DER")).decode('ascii'),
             )
     
 
     def sign_transactions(self, sender, recipient, amount):
         signer = PKCS1_v1_5.new(RSA.import_key(binascii.unhexlify(self.private_key)))
-        h = SHA256.new((str(sender) + str(recipient) + str(amount)).encode('utf-8'))
+        h = SHA256.new((str(sender) + str(recipient) + str(amount)).encode('utf8'))
         signature = signer.sign(h)
         return binascii.hexlify(signature).decode('ascii')
     

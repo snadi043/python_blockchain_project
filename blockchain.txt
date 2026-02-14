@@ -1,2 +1,3 @@
-[{"index": 0, "previous_hash": "", "transactions": [], "proof": 0, "timestamp": 1770495077.315659}, {"index": 1, "previous_hash": "c775ae7455f086e2fc68520d31bfebfdb18ffeaceb933085c510d5f8d2177813", "transactions": [{"sender": "MINING", "recipient": "MAX", "amount": 10}], "proof": 1770495058.6446211, "timestamp": 1770495077.315674}]
-[{"sender": "MAX", "recipient": "kali", "amount": 1.0}]
+[{"index": 0, "previous_hash": "", "transactions": [], "proof": 0, "timestamp": 1771001477.1102479}]
+[]
+["localhost:8002/"]

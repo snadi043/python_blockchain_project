@@ -1,7 +1,7 @@
 # import is the keyword in python which is used to import packages or libraries which are not shipped with python itself.
 # One of such important packages which is also popular is functools.
 # In this functools package we can get the access to use the "reduce()" method which is helpful to optimize the complex math calulations.
-import functools
+from functools import reduce 
 
 # json is another python built in library to convert the data types into strings and vice-versa.
 import json
@@ -52,7 +52,9 @@ class Blockchain:
         # If user wants to add coins then they will be adding that transaction to list of open transactions.
         self.__open_transactions = []
         self.hosting_node = hosting_node_id
-
+        # node is the private variable in the blockchain class which is of set data type which is unique and cannot be repetitive.
+        self.__peer_nodes = set()
+        # self.load_data()
 
     # Making the load_data() as the method of the block__chain. 
     # function to read file
@@ -83,13 +85,15 @@ class Blockchain:
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'], 0)
                     updated_blockchain.append(updated_block)
                 self.__chain = updated_blockchain
-                __open_transactions = json.loads(file_content[1])
+                __open_transactions = json.loads(file_content[1][:-1])
                 updated_transactions = []
                 for transaction in __open_transactions:
                     # Refactoring the updated_transactions by using the instance of the Transaction class 
                     updated_transactions = Transaction(transaction['sender'], transaction['recipient'], transaction['amount'], transaction['signature'])
                     updated_transactions.append(updated_transactions)
                 self.__open_transactions = updated_transactions
+                peer_node = json.loads(file_content[2])
+                self.__peer_nodes = set(peer_node)
         # So, it is also an convention that every try block should be continued with atleast one "except" block.
         # The purpose of except block is to handle the errors which the try block couldn't handle and which eventually
         # throws an error and stops the execution of further code.
@@ -146,6 +150,8 @@ class Blockchain:
                 f.write('\n')
                 __open_transactions = [tx.__dict__ for tx in self.__open_transactions]
                 f.write(json.dumps(__open_transactions))
+                f.write('\n')
+                f.write(json.dumps(list(self.__peer_nodes)))
         except IOError:
             print('Unble to write data to the file.')
 
@@ -184,10 +190,10 @@ class Blockchain:
             # second is a iterable 
             # third is the list of values to be returned as a result.
         tx_sender.append(open_transaction_sender)
-        amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
+        amount_sent = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
         tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in self.__chain]
-        amount_recieved = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
+        amount_recieved = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
         return amount_recieved - amount_sent
         
@@ -264,11 +270,11 @@ class Blockchain:
             # }
 
             # Using OrderedDict to represent mining_reward_transaction dictionary
-            mining_reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD, '')
+            mining_reward_transaction = Transaction('MINING', self.hosting_node, '', MINING_REWARD)
             
             # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
             copied_transactions = self.__open_transactions[:]
-            for tx in block.transactions:
+            for tx in copied_transactions:
                 if not Wallet.verify_transactions(tx):
                     return None
             copied_transactions.append(mining_reward_transaction)
@@ -284,7 +290,25 @@ class Blockchain:
         finally:
             print('Mine block code completed...')
 
+    # add_node() -> It is the function responsible to add the node to the blockchain.
+    # the node attribute here, refers to the another system or an host url which is considered as another user using the blockchain
+    # application once, the blockchain application goes live into the production environment.
+    def add_peer_node(self, node):
+        self.__peer_nodes.add(node)
+        self.save_data()
 
+    
+    # remove_node() -> It is the function responsible to remove the node from the blockchain.
+    # the node attribute here, refers to the another system or an host url which is considered as another user using the blockchain
+    # application once, the blockchain application goes live into the production environment.
+    def remove_peer_node(self, node):
+        self.__peer_nodes.discard(node)
+        self.save_data()
+
+
+    # geet_peer_nodes() -> It is the function responsible to fetch all the nodes from the blockchain.
+    def get_peer_nodes(self):
+        return list(self.__peer_nodes)[:]
 
 # Transaction - Dictionary // key,value pairs
 # Outstanding_transactions - list // Order doesnt matter
