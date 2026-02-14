@@ -215,7 +215,15 @@ def remove_node(node_url):
 
 # Defining the host and the port for the server to run the application.
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    # importing the package "ARGUMENT PARSER", to add/configure arguments to the commands in the terminal.
+    # Here, in order to scale the blockchain functionality to work with multiple nodes, it is important to run the application
+    # over multiple ports, for which it is important to use argmentParser and set port arguments.
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument('-p', '--port', type=int, default=5000)
+    args = parser.parse_args()
+    port = args.port
+    app.run(host='0.0.0.0', port=port)
 
 
 
