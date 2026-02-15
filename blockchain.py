@@ -179,11 +179,19 @@ class Blockchain:
     #       - In this transaction checking the conditions that identifies the participant if sender or recipient.
     #   - second list the result is retriving the amount from the transaction based on the participant.
     #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
-    def get_balance(self):
-        # Validation to check if the public_key exists in the blockchain when fetching the balance.
-        if self.public_key == None:
-            return None
-        participant = self.public_key
+    def get_balance(self, sender=None):
+        # Adding a new validation check to check if the "sender is none".
+        # This becomes an important validation check when doing a broadcast transaction, because in the broadcast transaction when adding a transasction,
+        # get_balanance method is required, then if the peer_node is the one which is checked with this validation, then we are missing the check who is
+        # sending the amount in case of peer_node.
+        # In order to handle this case, in the get_balance method, we accept sender parameter and set it accordingly. 
+        if sender == None:
+            # Validation to check if the public_key exists in the blockchain when fetching the balance.
+            if self.public_key == None:
+                return None
+            participant = self.public_key
+        else:
+            participant = sender
     # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
 
     # Refactoring the tx_sender, open_transaction_sender by properly accessing the attributes of the Transaction class 
@@ -217,7 +225,8 @@ class Blockchain:
     # followed by name of the function and () and :
     # The second line of the function has to be indented to get identified by the python compiler
     # in order to execute the code.
-    def add_transaction(self, recipient, sender, signature, amount=1.0):
+    # setting the attribute is_recieving, to check if the get_balanace method being used is for peer_nodes or actual blockchain block.
+    def add_transaction(self, recipient, sender, signature, amount=1.0, is_recieving = False):
         if self.public_key == None:
             return False
         """ Function to perfom the task of adding value/data to the block.
@@ -246,21 +255,22 @@ class Blockchain:
             # other nodes, it is neccessary to think about a connection from within this application to other hosting sites (nodes.)
             # In order to make such a functionality in python, there is an package called "requests".
             #  And this has to be implemented on each node in the connection list, which can be done using the for loop.
-            for node in self.__peer_nodes:
-                url = 'http://{}/broadcast-transaction'.format(node)
-                try:
-                    response = requests.post(url, json = {
-                        'sender': sender,
-                        'recipient': recipient,
-                        'amount': amount,
-                        'signature': signature
-                    })
-                    if response.status_codes == 400 or response.status_codes == 500:
-                        print('Server Error. Something went wrong.')
-                        return False
-                except requests.exceptions.ConnectionError:
-                    print('Unable to connect to the node.')
-                    continue
+            if not is_recieving:
+                for node in self.__peer_nodes:
+                    url = 'http://{}/broadcast-transaction'.format(node)
+                    try:
+                        response = requests.post(url, json = {
+                            'sender': sender,
+                            'recipient': recipient,
+                            'amount': amount,
+                            'signature': signature
+                        })
+                        if response.status_codes == 400 or response.status_codes == 500:
+                            print('Server Error. Something went wrong.')
+                            return False
+                    except requests.exceptions.ConnectionError:
+                        print('Unable to connect to the node.')
+                        continue
             return True
         return False
         # append() -> It is the built in python method for the List data type used to add values to the

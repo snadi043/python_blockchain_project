@@ -10,7 +10,7 @@ class Verification:
     def verify_transaction(transaction, get_balance, check_funds = True):
         if check_funds: 
             # Refactoring the balance by correctly accessing the attributes of the instance of the Transaction class. 
-            sender_balance = get_balance()
+            sender_balance = get_balance(transaction.sender)
             return sender_balance >= transaction.amount and Wallet.verify_transactions(transaction)
         else:
             return Wallet.verify_transactions(transaction)
