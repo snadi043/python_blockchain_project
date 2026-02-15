@@ -10,6 +10,10 @@ import json
 # Pickle converts the data into binary format and can revert back to python compatiable data formats.
 import pickle
 
+# Requests is the package which enables to create a connection using HTTP methods from within the application to other applications.
+import requests
+
+
 # OrderedDict is another method available from "Collections" package which is used to ensure that the order in the dictionary stays the same.
 from collections import OrderedDict 
 
@@ -238,6 +242,25 @@ class Blockchain:
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
+            # Here, in the add-transactions method, since the application is now in a position which is to be scaled to communicate with
+            # other nodes, it is neccessary to think about a connection from within this application to other hosting sites (nodes.)
+            # In order to make such a functionality in python, there is an package called "requests".
+            #  And this has to be implemented on each node in the connection list, which can be done using the for loop.
+            for node in self.__peer_nodes:
+                url = 'http://{}/broadcast-transaction'.format(node)
+                try:
+                    response = requests.post(url, json = {
+                        'sender': sender,
+                        'recipient': recipient,
+                        'amount': amount,
+                        'signature': signature
+                    })
+                    if response.status_codes == 400 or response.status_codes == 500:
+                        print('Server Error. Something went wrong.')
+                        return False
+                except requests.exceptions.ConnectionError:
+                    print('Unable to connect to the node.')
+                    continue
             return True
         return False
         # append() -> It is the built in python method for the List data type used to add values to the
