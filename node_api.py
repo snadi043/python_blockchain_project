@@ -9,10 +9,23 @@ from flask_cors import CORS
 from wallet import Wallet
 from blockchain import Blockchain
 
+# importing the package "ARGUMENT PARSER", to add/configure arguments to the commands in the terminal.
+# Here, in order to scale the blockchain functionality to work with multiple nodes, it is important to run the application
+# over multiple ports, for which it is important to use argmentParser and set port arguments.
+from argparse import ArgumentParser
+
 # Initializing the Flask framework in the application.
 app = Flask(__name__)
-wallet = Wallet()
-blockchain = Blockchain(wallet.public_key)
+
+parser = ArgumentParser()
+parser.add_argument('FLASK_APP=node_api.py', 'flask run', '-p', '--port', type=int, default=5000)
+args = parser.parse_args()
+port = args.port
+# Configuring to Initialize the wallet and the blockchain classes in every hosting machine with respect to the port specified
+# in the command line inorder to provision the multiple nodes functionality.
+wallet = Wallet(port)
+blockchain = Blockchain(wallet.public_key, port)
+
 # Implementing the CORS features on the app by wrapping it. 
 CORS(app)
 
@@ -43,7 +56,7 @@ def get_blockchain():
 def load_keys():
     if wallet.load_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key)
+        blockchain = Blockchain(wallet.public_key, port)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -63,7 +76,7 @@ def save_keys():
     wallet.create_keys()
     if wallet.save_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key)
+        blockchain = Blockchain(wallet.public_key, port)
         response = {
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -215,14 +228,6 @@ def remove_node(node_url):
 
 # Defining the host and the port for the server to run the application.
 if __name__ == "__main__":
-    # importing the package "ARGUMENT PARSER", to add/configure arguments to the commands in the terminal.
-    # Here, in order to scale the blockchain functionality to work with multiple nodes, it is important to run the application
-    # over multiple ports, for which it is important to use argmentParser and set port arguments.
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument('-p', '--port', type=int, default=5000)
-    args = parser.parse_args()
-    port = args.port
     app.run(host='0.0.0.0', port=port)
 
 

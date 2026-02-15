@@ -40,7 +40,7 @@ MINING_REWARD = 10
 # participants = {'Manuel'}
 
 class Blockchain:
-    def __init__(self, hosting_node_id):
+    def __init__(self, public_key, node_id):
 
         # genesis_block - It is the first block of the blockchain transaction which initializes the blockchain transactions.
         # Refactored the genesis_block with the Block class instance 
@@ -51,7 +51,8 @@ class Blockchain:
         # __open_transactions is a list which represents the transactions that are under build process.
         # If user wants to add coins then they will be adding that transaction to list of open transactions.
         self.__open_transactions = []
-        self.hosting_node = hosting_node_id
+        self.public_key = public_key
+        self.node_id = node_id
         # node is the private variable in the blockchain class which is of set data type which is unique and cannot be repetitive.
         self.__peer_nodes = set()
         # self.load_data()
@@ -65,7 +66,7 @@ class Blockchain:
             # So, the "try" block here first tries to execute the code within it whenever the load_data() function is
             # triggered in the application. And if there is no error in the code the result is generated from this block.
         try:
-            with open('blockchain.txt', mode='rb') as f:
+            with open('blockchain.txt-{}'.format(self.node_id), mode='rb') as f:
                 # file_content = pickle.loads(f.read())
                 file_content = f.readlines()
 
@@ -132,7 +133,7 @@ class Blockchain:
         # - the mode is also changed from 'w' to 'wb' indicating that pickle works with binary format when writing into a file.
 
         try:
-            with open('blockchain.txt', mode='w') as f:
+            with open('blockchain.txt-{}'.format(self.node_id), mode='w') as f:
                 # here, blockchain and open_transacations are in list format. But, appending into files only works with string format data.
                 # so using str() on the blockchain to avoid errors.
                 # Also, as we know since pickle writes only binary data the line escape charector is not handled in pickle file.
@@ -175,10 +176,10 @@ class Blockchain:
     #   - second list the result is retriving the amount from the transaction based on the participant.
     #   - Once the values of the sender amount and recipient amount are extracted then looping through all the transactions to get the balance.   
     def get_balance(self):
-        # Validation to check if the hosting_node exists in the blockchain when fetching the balance.
-        if self.hosting_node == None:
+        # Validation to check if the public_key exists in the blockchain when fetching the balance.
+        if self.public_key == None:
             return None
-        participant = self.hosting_node
+        participant = self.public_key
     # Since, we changed the data type of block from 'dictionary' to a class Object the attributes are not accessed by [] but by . notation.
 
     # Refactoring the tx_sender, open_transaction_sender by properly accessing the attributes of the Transaction class 
@@ -213,7 +214,7 @@ class Blockchain:
     # The second line of the function has to be indented to get identified by the python compiler
     # in order to execute the code.
     def add_transaction(self, recipient, sender, signature, amount=1.0):
-        if self.hosting_node == None:
+        if self.public_key == None:
             return False
         """ Function to perfom the task of adding value/data to the block.
 
@@ -251,7 +252,7 @@ class Blockchain:
     # In order to add the __open_transactions to processed transaction a hashing mechanism has to be implemented to make
     # the blockchain secure while mining the blocks.
     def mine_block(self):
-        if self.hosting_node == None:
+        if self.public_key == None:
             return None
         try:
             last_block = self.__chain[-1]
@@ -270,7 +271,7 @@ class Blockchain:
             # }
 
             # Using OrderedDict to represent mining_reward_transaction dictionary
-            mining_reward_transaction = Transaction('MINING', self.hosting_node, '', MINING_REWARD)
+            mining_reward_transaction = Transaction('MINING', self.public_key, '', MINING_REWARD)
             
             # [:] -> Represents the range selector in a list which creates a copy of the original list of all the elements from start to end 
             copied_transactions = self.__open_transactions[:]
