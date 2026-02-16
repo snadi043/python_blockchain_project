@@ -18,13 +18,18 @@ from argparse import ArgumentParser
 app = Flask(__name__)
 
 parser = ArgumentParser()
-parser.add_argument('FLASK_APP=node_api.py', 'flask run', '-p', '--port', type=int, default=5000)
+parser.add_argument('-p', '--port', type=int, default=5000)
 args = parser.parse_args()
+print(args, 'args')
 port = args.port
 # Configuring to Initialize the wallet and the blockchain classes in every hosting machine with respect to the port specified
 # in the command line inorder to provision the multiple nodes functionality.
 wallet = Wallet(port)
 blockchain = Blockchain(wallet.public_key, port)
+
+# Defining the host and the port for the server to run the application.
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=port)
 
 # Implementing the CORS features on the app by wrapping it. 
 CORS(app)
@@ -177,7 +182,7 @@ def add_transaction():
         return jsonify(response), 500
     
 
-@app.route('/broadcast-transaction', methods=[''])
+@app.route('/broadcast-transaction', methods=['POST'])
 def broadcast_transaction():
     values = request.get_json()
     if not values:
@@ -208,6 +213,44 @@ def broadcast_transaction():
             'message': 'Unable to add transaction to the blockchain.'
         }
         return jsonify(response), 500
+
+
+# broadcast_block is the method which is triggered and is designed to take action when peer node blocks are to matched on all the nodes
+# of the blockchain application, because only then it is possible to make proper transactions from peer_nodes and blockchain nodes and open_transactions.
+@app.route('/broadcast-block', methods=['POST'])
+def broadcast_block():
+    values = request.get_json()
+    if not values:
+        response = {
+            'message': 'Unable to find the values from the request object.'
+        }
+        return jsonify(response), 400
+    if not 'block' in values:
+        response = {
+            'message': 'The block value from the values request object is missing.'
+        }
+        return jsonify(response), 400
+    block = values['block']
+    # this is the condition to check if current block index is same than the incoming block index.
+    # this is the case which is accurate to add the transaction to the blockchain and can confirm there are no missing block in between.
+    if block['index'] == blockchain.__chain[-1].index:
+        if blockchain.add_block(block):
+            response = {
+                'message': 'Block added successfully'
+            }
+            return jsonify(response), 201
+        else: 
+            response = {
+                'message': 'Block seems to be invalid'
+            }
+            return jsonify(response), 500
+    elif block['index'] > blockchain.__chain[-1].index + 1: 
+        pass
+    else:
+        response = {
+            'message': 'Missing blocks in between the transactions.'
+        }
+        return jsonify(response), 409
 
 
 @app.route('/nodes', methods=['GET'])
@@ -257,10 +300,6 @@ def remove_node(node_url):
     return jsonify(response), 200
 
 
-
-# Defining the host and the port for the server to run the application.
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=port)
 
 
 
