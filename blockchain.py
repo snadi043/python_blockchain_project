@@ -13,6 +13,7 @@ import pickle
 # Requests is the package which enables to create a connection using HTTP methods from within the application to other applications.
 import requests
 
+from flask import jsonify
 
 # OrderedDict is another method available from "Collections" package which is used to ensure that the order in the dictionary stays the same.
 from collections import OrderedDict 
@@ -57,6 +58,7 @@ class Blockchain:
         self.__open_transactions = []
         self.public_key = public_key
         self.node_id = node_id
+        self.resolve_conflict = False
         # node is the private variable in the blockchain class which is of set data type which is unique and cannot be repetitive.
         self.__peer_nodes = set()
         # self.load_data()
@@ -318,6 +320,23 @@ class Blockchain:
             # Resetting the blockchain to empty block once the mining of block is finished.
             self.__open_transactions = []
             self.save_data()
+            for node in self.__peer_nodes:
+                url = 'http://{}/broadcast-block'.format(node)
+                converted_block = block.__dict__.copy()
+                converted_block['transactions'] = [
+                    tx.__dict__ for tx in converted_block['transactions']
+                ]
+                try:
+                    response = requests.post(url, json={
+                        'block': converted_block
+                    })
+                    if response.status_code == 400 or response.status_code == 500:
+                        print('Block declined, needs resolving.')
+                    if response.status_code == 409:
+                        self.resolve_conflict == True
+                        return jsonify(response), 200
+                except requests.exceptions.ConnectionError:
+                    continue
             return block
         except IndexError:
             print('List Index may be out of range.')
@@ -351,21 +370,7 @@ class Blockchain:
                     except ValueError:
                         print('Item was already removed.')
         self.save_data()
-        for node in self.__peer_nodes:
-            url = 'http://{}/broadcast-block'.format(node)
-            converted_block = block.__dict__.copy()
-            converted_block['transactions'] = [
-                tx.__dict__ for tx in converted_block['transactions']
-            ]
-            try:
-                response = requests.post(url, json={
-                    'block': converted_block
-                })
-                if response.status_code == 400 or response.status_code == 500:
-                    print('Block declined, needs resolving.')
-            except requests.exceptions.ConnectionError:
-                continue
-        return block
+        return True
     
         
     

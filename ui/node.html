@@ -267,7 +267,7 @@
                         vm.wallet = null;
                         vm.walletLoading = false;
                         vm.funds = 0;
-                        vm.error = 'Something went wrong while creating a wallet.'
+                        vm.error = error.response.data.message
                     })
                 },
                 onLoadWallet: function () {
@@ -292,7 +292,7 @@
                         vm.wallet = null;
                         vm.walletLoading = false;
                         vm.funds = 0;
-                        vm.error = 'Something went wrong while loading a wallet.'
+                        vm.error = error.response.data.message
                     })
                 },
                 onSendTx: function () {
@@ -311,7 +311,7 @@
                     })
                     .catch((err) => {
                         vm.success = null;
-                        vm.error = 'Something went wrong when adding a transaction.';
+                        vm.error = error.response.data.message
                         vm.dataLoading = false;
                         vm.txLoading = false
                     })
@@ -327,7 +327,7 @@
                     })
                     .catch((err) => {
                         vm.success = null;
-                        vm.error = 'Something went wrong when creating a new block.'
+                        vm.error = error.response.data.message
                         vm.dataLoading = false
 
                     })
@@ -344,7 +344,7 @@
                                 console.log('Blockchain data fetched.')
                             }).catch((err) => {
                                 vm.dataLoading = false
-                                vm.error = 'Something went wrong while fetching the data.'
+                                vm.error = error.response.data.message
                             })
                     } else {
                         // Load transaction data
@@ -355,7 +355,7 @@
                                 console.log('OpenTransactions data fetched.')
                             }).catch((err) => {
                                 vm.dataLoading = false;
-                                vm.error = 'Something went wrong while fetching the data.'
+                                vm.error = error.response.data.message
                             })
                     }
                 }

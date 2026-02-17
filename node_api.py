@@ -97,6 +97,11 @@ def save_keys():
 # POST method to handle the response to add the block into the blockchain
 @app.route('/mineblock', methods=['POST'])
 def mineblock():
+    if blockchain.resolve_conflict:
+        response = {
+            'message': 'Resolve conflicts first, blocks are missing'
+        }
+        return jsonify(response), 409
     block = blockchain.mine_block()
     if block != None:
         dict_block = block.__dict__.copy() 
@@ -245,7 +250,11 @@ def broadcast_block():
             }
             return jsonify(response), 500
     elif block['index'] > blockchain.__chain[-1].index + 1: 
-        pass
+        blockchain.resolve_conflict = True
+        response = {
+            'message': 'The Local blockchain is shorter and is missing the nodes from the peer nodes.',
+        }
+        return jsonify(response), 200
     else:
         response = {
             'message': 'Missing blocks in between the transactions.'
