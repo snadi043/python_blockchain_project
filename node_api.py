@@ -119,6 +119,22 @@ def mineblock():
         }
         return jsonify(response), 500
 
+
+
+@app.route('/resolve-conflicts', methods=['POST'])
+def resolve_conflicts():
+    repalced = blockchain.resolve()
+    if repalced:
+        response = {
+            'message': 'Chain was kept.'
+        }
+    else:
+        response = {
+            'message': 'Local chain kept.'
+        }
+    return jsonify(response), 200
+
+
 # GET method to handle the response to fetch the balance with respect to the wallet of the user.
 @app.route('/balance', methods=['GET'])
 def get_balance():

@@ -386,6 +386,32 @@ class Blockchain:
     def get_peer_nodes(self):
         return list(self.__peer_nodes)[:]
 
+
+    def resolve(self):
+        winner_chain = self.__chain
+        replace = False
+        for node in self.__peer_nodes:
+            url = 'http://{}/chain'.format(node)
+            try:
+                response = requests.get(url)
+                response_data = response.json()
+                node_chain_transaction = [Block(block['index'], block['previous_hash'], block['transactions'], block['proof'], block['timestamp']) for block in response_data['transactions']]
+                node_chain_transaction['transactions'] = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amoun']) for tx in node_transaction]
+                node_transaction_length = len(node_chain_transaction)
+                blockchain_length = len(self.__chain)
+                # This is the condition to make the resolution process 
+                if node_transaction_length > blockchain_length and Verification.verify_blockchain(node_chain_transaction):
+                    winner_chain = node_chain_transaction
+                    replace = True
+            # Handling the conditions if trying to access the nodes which are offline.
+            except requests.exceptions.ConnectionError:
+                continue
+            self.resolve_conflict = False
+            self.__chain = winner_chain
+            if replace:
+                self.__open_transactions = []
+            self.save_data()
+            return replace
 # Transaction - Dictionary // key,value pairs
 # Outstanding_transactions - list // Order doesnt matter
 # blockchain - list // order matters 
